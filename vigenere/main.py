@@ -11,13 +11,16 @@ string = "RIKVBIYBITHUSEVAZMMLTKASRNHPNPZICSWDSVMBIYFQEZUBZPBRGYNTBURMBECZQKBMBP
          "OPVPBIEZALKZWTOPRYFARATPBHGLWWMXNHPHXVKBAANAVMNLPHMEMMSZHMTXHTFMQVLILOVVULNIWGVFUCGRZZKAUNADVYXUDDJVKAYUYO" \
          "WLVBEOZFGTHHSPJNKAYICWITDARZPVU"
 
+assert TranspositionCipher.decrypt("WISKUNDE", TranspositionCipher.encrypt("WISKUNDE", string)) == string
+
 shifted = TranspositionCipher.encrypt("WISKUNDE", string)
 
 # after change count
 LCPCount(shifted).check_count()
 
 normal = TranspositionCipher.decrypt("WISKUNDE", shifted)
-LCPCount(normal).check_count()
+
+print("normal", LCPCount(normal).check_count())
 
 
 highest_value = 0

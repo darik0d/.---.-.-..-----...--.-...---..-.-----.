@@ -21,18 +21,8 @@ class TranspositionCipher:
 
         out = ""
         counter3 = 0
-        for i, c in enumerate(text):
-            while True:
-                j = i + counter3
-                sub_ar = data_matrix[j % len(key)]
-                i2 = math.floor(j / len(key))
-
-                if len(sub_ar) > i2:
-                    break
-                counter3 += 1
-
-            out += sub_ar[i2]
-
+        for d in data_matrix:
+            out += ''.join(d)
         return out
 
     @staticmethod
@@ -51,18 +41,19 @@ class TranspositionCipher:
             data_matrix.append([])
 
         counter3 = 0
-        for i, c in enumerate(text):
 
-            while True:
-                j = i + counter3
-                last_row = max_size == math.ceil((j + 1) / len(key))
+        text_index = 0
+        column_size = math.floor(len(text) / len(key))
 
-                if not last_row or gap_indexes[j % len(key)] < gapped_amount:
-                    break
+        for i in range(len(key)):
+            length = column_size
+            if gap_indexes[i] < gapped_amount and not gapped_amount == len(key):
+                length += 1
 
-                counter3 += 1
+            for j in range(length):
 
-            data_matrix[j % len(key)].append(c)
+                data_matrix[i].append(text[text_index])
+                text_index += 1
 
         new_data_matrix = [[] for i in range(len(key))]
         for i in range(len(data_matrix)):
@@ -71,6 +62,7 @@ class TranspositionCipher:
             new_data_matrix[i] = data_matrix[new_index]
 
         out = ""
+
         for i, c in enumerate(text):
             sub_ar = new_data_matrix[i % len(key)]
             # print(i % len(key), len(sub_ar))
