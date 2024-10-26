@@ -60,8 +60,8 @@ def find_highest_cp(cipher_string):
     return highest_key
 
 
-best_key = find_highest_cp(string)
-print(best_key)
+#best_key = find_highest_cp(string)
+#print(best_key)
 
 out = TranspositionCipher.decrypt("ABECGFD", string)
 print(out)
