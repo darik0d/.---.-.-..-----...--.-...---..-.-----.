@@ -3,6 +3,7 @@
 #####################
 import random
 import re
+from abc import abstractmethod
 
 
 # Attempt #1: Bruteforce & manually check
@@ -97,8 +98,64 @@ class PlayFairBlock:
             string += "x"
         return string
 
+class Solver:
+    def __init__(self, string: str, block: PlayFairBlock):
+        self.str = string.lower()
+        self.block = block
+
+    @abstractmethod
+    def solve(self):
+        pass
+
+class BruteForceSolver(Solver):
+    def solve(self):
+        bigrams = self.block.split_to_bigrams(self.str, False)
+        numb = 0
+        # Brute force
+        while True:
+            self.block.rand_initialize()
+            decrypted = ""
+            for i in bigrams:
+                decrypted += self.block.decrypt_bigram(i)
+            # Save the decrypted text and the key
+            with open("decrypted.txt", "a") as f:
+                f.write(decrypted + "\n Key: " + str(self.block.grid) + "\n\n")
+
+            numb += 1
+            if numb % 1000 == 0:
+                print("Tried", numb, "times")
+
 
 # Attempt 2: Bruteforce with autocheck
+
+class BruteforceWithAutocheck(Solver):
+
+    def __init__(self, string: str, block: PlayFairBlock, threshold: float, languages: list):
+        super().__init__(string, block)
+        self.threshold = threshold
+        self.languages = languages
+    def solve(self):
+        bigrams = self.block.split_to_bigrams(self.str, False)
+        numb = 0
+        # Brute force
+        while True:
+            self.block.rand_initialize()
+            decrypted = ""
+            for i in bigrams:
+                decrypted += self.block.decrypt_bigram(i)
+            # Save the decrypted text and the key
+            with open("decrypted.txt", "a") as f:
+                f.write(decrypted + "\n Key: " + str(self.block.grid) + "\n\n")
+
+            numb += 1
+            if numb % 1000 == 0:
+                print("Tried", numb, "times")
+            # Check if the decrypted text is in the language
+
+                   
+
+
+
 
 # Attempt 3: Simulated annealing: https://en.wikipedia.org/wiki/Simulated_annealing
 
@@ -126,15 +183,5 @@ if __name__ == "__main__":
     bigrams = block.split_to_bigrams(the_string, False)
     numb = 0
     # Brute force
-    while True:
-        block.rand_initialize()
-        decrypted = ""
-        for i in bigrams:
-            decrypted += block.decrypt_bigram(i)
-        # Save the decrypted text and the key
-        with open("decrypted.txt", "a") as f:
-            f.write(decrypted + "\n Key: " + str(block.grid) + "\n\n")
-
-        numb += 1
-        if numb % 1000 == 0:
-            print("Tried", numb, "times")
+    brute = BruteForceSolver(the_string, block)
+    brute.solve()
