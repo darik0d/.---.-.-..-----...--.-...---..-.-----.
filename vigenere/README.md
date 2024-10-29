@@ -35,6 +35,8 @@ GELUK ZEGGEN BERG BE KLIMMERS DIE EEN MOORDENDE STEENLAWINE OPDRIECENT I METER V
 VOORBIJ RAZEN GELUK IS OP DEN DUUR EEN KWESTIE VAN BEKWAAMHEID IK WEET DAT ZE DAAR GELIJK IN HEBBEN I
 ```
 
+Van het boek 'Problemski Hotel' van 'Dimitri Verhulst'
+
 ## oplossings methode
 eerst heb ik de enkel kolom transpositie achterhaalt.
 Vervolgens [simon singh cracking the vigenere cipher](https://www.simonsingh.net/The_Black_Chamber/vigenere_cracking_tool.html)
