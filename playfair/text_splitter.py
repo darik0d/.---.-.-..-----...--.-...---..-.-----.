@@ -11,8 +11,6 @@ from math import log
 words = open("word_lists/without_frequency/en_eng_news_2005_100K-sentences.txt").read().split()
 wordcost = dict((k, log((i+1)*log(len(words)))) for i,k in enumerate(words))
 maxword = max(len(x) for x in words)
-words_with_freq = open("word_lists/with_frequency/en_eng_news_2005_100K-sentences.txt").read().split("\n")
-# TODO
 
 def infer_spaces(s):
     """Uses dynamic programming to infer the location of spaces in a string
@@ -41,3 +39,7 @@ def infer_spaces(s):
         i -= k
 
     return " ".join(reversed(out))
+
+if __name__ == "__main__":
+    s = 'thelifeisnotfair'
+    print(infer_spaces(s))
