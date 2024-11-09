@@ -96,7 +96,7 @@ class EnigmaMachine:
         
         return (current_rotation + 1) % 26
     
-    def __do_rotors_rotation(self):
+    def do_rotors_rotation(self):
         """
         Performs one rotation of the rotors.
         """
@@ -127,7 +127,7 @@ class EnigmaMachine:
                 rotor_out = self.__rotor(rotor_out, i, False)
             plug_out = self.__plugboard(rotor_out)
             output += plug_out
-            self.__do_rotors_rotation()
+            self.do_rotors_rotation()
             
         if reset_rotation:
             self.rotor_rotations = original_rotor_rotations

@@ -38,7 +38,6 @@ class CommonPrefixCounter:
     def get_lcp(self):
         """
         for each entry in the suffix array, store a LCP value
-        :return:
         """
         lcp = [0]
 
