@@ -1,6 +1,7 @@
 import itertools
 from CommonPrefixCounter import CommonPrefixCounter
 from TranspositionCipher import TranspositionCipher
+from VigenereSolver import VigenereSolver
 
 string = "YZDCHLBZIANYLLXRZMMPMOVZCHWDCAKVJHAPUUNVHTGPNAEIILWXNUNLZMLGCLIIOLDZUAVNZTMPMLIIOGGRUQZPDOWLGLDZCALADVVXCXWY" \
          "UJRSIADKMKUMNEGLCSNICXVYTPERQZGHILVJASDRHLEIMKGPEUVVZXWSGBWEJZSSFYNIYSVTNUVLOGMLHWKIYHYTYLUOCTSCYAVIVWKHMKEIYA" \
@@ -59,9 +60,19 @@ def find_highest_cp(cipher_string):
     print("highest", highest_value, highest_key)
     return highest_key
 
+if __name__ == "__main__":
+    """
+    Solve Transposition Cipher
+    """
 
-#best_key = find_highest_cp(string)
-#print(best_key)
+    #best_key = find_highest_cp(string)
+    #print(best_key)
 
-out = TranspositionCipher.decrypt("ABECGFD", string)
-print(out)
+    out = TranspositionCipher.decrypt("ABECGFD", string)
+
+    """
+    Solve Vigenere Cipher
+    """
+    vs = VigenereSolver(out)
+    plaintext, key = vs.crack()
+    print(key, plaintext)
