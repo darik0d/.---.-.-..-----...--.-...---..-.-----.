@@ -8,7 +8,7 @@ import os
 from math import log
 
 # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
-words = open("word_lists/without_frequency/en_eng_news_2005_100K-sentences.txt").read().split()
+words = open("word_lists/without_frequency/nl_nld_mixed_2012_100K-sentences.txt").read().split()
 wordcost = dict((k, log((i+1)*log(len(words)))) for i,k in enumerate(words))
 maxword = max(len(x) for x in words)
 
@@ -40,6 +40,8 @@ def infer_spaces(s):
 
     return " ".join(reversed(out))
 
+
 if __name__ == "__main__":
-    s = 'thelifeisnotfair'
+    s = 'restrfhjbjhbkjnljhlkhjkk'
     print(infer_spaces(s))
+    o = "the life is not fair dar i a you know"
