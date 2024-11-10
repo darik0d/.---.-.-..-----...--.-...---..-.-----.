@@ -1,3 +1,5 @@
+import datetime
+
 from EnigmaMachine import EnigmaMachine
 
 
@@ -34,7 +36,7 @@ class PermutatieMatrix:
                "THEQUICKBROWNFXJMPSVLAZYDG",
                "XANTIPESOKRWUDVBCFGHJLMQYZ"]
     _reflector = "YRUHQSLDPXNGOKMIEBFZCWVJAT"
-    _plug_mapping = "PBMEDFLHIZKGCNOAQRSWUVTXYJ"
+    _plug_mapping = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
     def __init__(self, rotor_links: list[tuple[str, str, int]], rotor_positions, rotor_rotations):
         """
@@ -68,8 +70,18 @@ class PermutatieMatrix:
             L1 = ord(a) - PermutatieMatrix._char_range[0]
             L2 = ord(b) - PermutatieMatrix._char_range[0]
 
+            machine = EnigmaMachine(self._rotors,
+                                    self._reflector,
+                                    self.rotor_positions,
+                                    self.rotor_rotations,
+                                    self._plug_mapping)
+
+            for i in range(index):
+                machine.do_rotors_rotation()
+
             for i in range(self._char_range[0], self._char_range[1]):
-                link = self.get_transformed_char(chr(i), index)
+
+                link = self.get_transformed_char(chr(i), machine)
 
                 L3 = i - PermutatieMatrix._char_range[0]
                 L3_transformed = ord(link) - PermutatieMatrix._char_range[0]
@@ -80,23 +92,15 @@ class PermutatieMatrix:
                 m1.add_propagate(m2)
                 m2.add_propagate(m1)
 
-    def get_transformed_char(self, char: str, index: int):
+    def get_transformed_char(self, char: str, machine: EnigmaMachine):
         """
-
+        :param machine:
         :param char: check following the enigma encryption which character corresponds to the provided char
-        :param index: the index of the message
         :return: corresponing character
         """
-        machine = EnigmaMachine(self._rotors,
-                                self._reflector,
-                                self.rotor_positions,
-                                self.rotor_rotations,
-                                self._plug_mapping)
 
-        for i in range(index):
-            machine.do_rotors_rotation()
+        char_link = machine.encrypt(char, True)
 
-        char_link = machine.encrypt(char)
         return char_link
 
     def trigger(self, a: str) -> bool:
@@ -176,6 +180,8 @@ class PermutatieMatrix:
 
 
 if __name__ == "__main__":
+    start = datetime.datetime.now()
+
     """
     Simulate permutation matrix
     """
@@ -219,6 +225,10 @@ if __name__ == "__main__":
     triggered = pm.trigger('A')
 
     if triggered:
-        print("this is the right setup")
+        print("this is the right setup", ['B', 'E', 'X'])
+
+    end = datetime.datetime.now()
+
+    print("exe time", (end - start).total_seconds())
 
 
