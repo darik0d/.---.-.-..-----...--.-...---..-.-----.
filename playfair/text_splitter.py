@@ -2,20 +2,27 @@
 # Splits the string without spaces in to the words. Enjoy!
 # The code is from the accepted answer here: https://stackoverflow.com/questions/8870261/how-to-split-text-without-spaces-into-list-of-words
 ###########################
-
+import math
 import re
 import os
 from math import log
 
 # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
-words = open("word_lists/without_frequency/nl_nld_mixed_2012_100K-sentences.txt").read().split()
-wordcost = dict((k, log((i+1)*log(len(words)))) for i,k in enumerate(words))
-maxword = max(len(x) for x in words)
 
-def infer_spaces(s):
+def infer_spaces(s, lang):
     """Uses dynamic programming to infer the location of spaces in a string
     without spaces."""
+    # Find the path starting with lang prefix
+    path = [filename for filename in os.listdir("word_lists/without_frequency/") if filename.startswith(lang)]
 
+    if len(path) > 1:
+        print("There are multiple files with the same prefix. Please specify the language.")
+        return
+    path = path[0]
+    # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
+    words = open("word_lists/without_frequency/" + path).read().split()
+    wordcost = dict((k, log((i+1)*log(len(words)))) for i, k in enumerate(words))
+    maxword = max(len(x) for x in words)
     # Find the best match for the i first characters, assuming cost has
     # been built for the i-1 first characters.
     # Returns a pair (match_cost, match_length).
@@ -40,8 +47,54 @@ def infer_spaces(s):
 
     return " ".join(reversed(out))
 
+def score_text(to_evaluate: str, langs=None):
+    if langs is None:
+        langs = ["en", "nl", "de", "fr", "es", "it"]
+    best_score = math.inf
+    best_lang = None
+    current_score = 0
+    for lang in langs:
+        path = [filename for filename in os.listdir("word_lists/without_frequency/") if filename.startswith(lang)]
+        if len(path) > 1:
+            print("There are multiple files with the same prefix. Please specify the language.")
+            return
+        path = path[0]
+        words = open("word_lists/without_frequency/" + path).read().split()
+        # wordcost = dict((k, log((i + 1) * log(len(words)))) for i, k in enumerate(words))
+        str_words = infer_spaces(to_evaluate, lang).split()
+        not_found = 0
+        for word_index in range(min(len(str_words), 100)): # Speedup the process by limiting
+            try:
+                word = str_words[word_index]
+                # Get the rank of the word
+                word_rank = words.index(word)
+                # word_cost = log((word_rank + 1) * log(len(words)))
+                word_cost = word_rank
+                current_score += word_cost
+            except:
+                print("Word not found in the list: ", word)
+                not_found += 1
+        # Penalize if a lot of words with 1 letter
+        one_letter_words = len([word for word in str_words if len(word) == 1])
+        current_score += one_letter_words * len(words) / 10
+        current_score /= (len(str_words) - not_found)
+        if best_score > current_score:
+            best_score = current_score
+            best_lang = lang
+        current_score = 0
+
+    return best_score, best_lang
+
 
 if __name__ == "__main__":
-    s = 'restrfhjbjhbkjnljhlkhjkk'
-    print(infer_spaces(s))
-    o = "the life is not fair dar i a you know"
+    s = "De naam en inspiratie komen van een Engelse termannealinguitgloeien binnen de metaalbewerking. Het betreft een techniek waarbij metaal verhit wordt en daarna gecontroleerd afgekoeld om de grootte van de kristallen binnen het materiaal te vergroten en daarmee het aantal defecten te verkleinen. "
+    #s = "The name of the algorithm comes from annealing in metallurgy, a technique involving heating and controlled cooling of a material to alter its physical properties. Both are attributes of the material that depend on their thermodynamic free energy."
+    #s = "La methode vient du constat que le refroidissement naturel de certains metaux ne permet pas aux atomes de se placer dans la configuration la plus solide. La configuration la plus stable est atteinte en maitrisant le refroidissement et en le ralentissant par un apport de chaleur externe, ou bien par une isolation. "
+    #s = "BHbdjfewlkfewkjlnfkjleqrnfx fhberhgfwjehrgfnhjw hebrrwhj"
+    s = s.lower()
+    s = s.replace(" ", "")
+    s = s.replace(",", "")
+    s = s.replace(".", "")
+    score, lang = score_text(s)
+    print(infer_spaces(s, lang))
+    print(score, lang)
