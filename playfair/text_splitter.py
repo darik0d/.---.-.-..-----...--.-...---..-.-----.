@@ -72,7 +72,7 @@ def score_text(to_evaluate: str, langs=None):
                 word_cost = word_rank
                 current_score += word_cost
             except:
-                print("Word not found in the list: ", word)
+                #print("Word not found in the list: ", word)
                 not_found += 1
         # Penalize if a lot of words with 1 letter
         one_letter_words = len([word for word in str_words if len(word) == 1])
@@ -85,12 +85,29 @@ def score_text(to_evaluate: str, langs=None):
 
     return best_score, best_lang
 
+def index_of_coincidence(string: str):
+    n = len(string)
+    freq = {}
+    for char in string:
+        if char in freq:
+            freq[char] += 1
+        else:
+            freq[char] = 1
+    ic = 0
+    for key in freq:
+        ic += freq[key] * (freq[key] - 1)
+    ic /= n * (n - 1)
+    return ic
 
 if __name__ == "__main__":
     s = "De naam en inspiratie komen van een Engelse termannealinguitgloeien binnen de metaalbewerking. Het betreft een techniek waarbij metaal verhit wordt en daarna gecontroleerd afgekoeld om de grootte van de kristallen binnen het materiaal te vergroten en daarmee het aantal defecten te verkleinen. "
-    #s = "The name of the algorithm comes from annealing in metallurgy, a technique involving heating and controlled cooling of a material to alter its physical properties. Both are attributes of the material that depend on their thermodynamic free energy."
-    #s = "La methode vient du constat que le refroidissement naturel de certains metaux ne permet pas aux atomes de se placer dans la configuration la plus solide. La configuration la plus stable est atteinte en maitrisant le refroidissement et en le ralentissant par un apport de chaleur externe, ou bien par une isolation. "
-    #s = "BHbdjfewlkfewkjlnfkjleqrnfx fhberhgfwjehrgfnhjw hebrrwhj"
+    s = "The name of the algorithm comes from annealing in metallurgy, a technique involving heating and controlled cooling of a material to alter its physical properties. Both are attributes of the material that depend on their thermodynamic free energy."
+    s = "La methode vient du constat que le refroidissement naturel de certains metaux ne permet pas aux atomes de se placer dans la configuration la plus solide. La configuration la plus stable est atteinte en maitrisant le refroidissement et en le ralentissant par un apport de chaleur externe, ou bien par une isolation. "
+    #s = "aaarhdkssmsdmssdfsfgsfgsxsarfrwe"
+    s = "ucncgtuetgawumnmabdfarpdtambzffyuwfqsgcetwhwnuvfhryunodmfqfygfymmpbgcmotwakotczfeacetwawhksiyeupkulhlueuawuqfksnmdqtfsnupumynutolndtrmmcvuzelutfbgnumpcmcvlupumyxknmoiftbgrnkbnwgtuetgawmrgtiavtupxdgdnupumynuvuzddmnrabysaqfupxcsugsodfufqtrcmtnuianwhdvnywuvtbtciosovwwupdbkftwurhcvnumpxpyuezrfuwiurnupkfumnmuqnurfwfvfmnuwtbnoiosovwwunuuoumtwvffssuptnukbcmrhfahtuqhbgtoknuuoawpdftqtvffkivrfuwvutqaifntwysxprnaikxqbabsixmairfxmzffybkeyvtbdfkdwvnxduvteuqutyhbnswpuzfnddmslnmnubagtokuqsgfkibmtbdfkivqafkzffyfqqtuvulqfntzfnrtomtbagtoknufkugwutbiqfkwohdvtkybtpxfanuianwhdvnywuvftcetwabuqcmdmcsiopuqtqyxknmnwnwtgupqucusuyqdsuqfklwmdmbpmylnmgthlqtintqnumpfkanfkwaorfkivossmysrffazfidlrbsyecmotwakomsmbfaabfkfslnfnzfnrthawgfvacmrquqshqdbzgsfakxsmalfabkdhzbsnfopumtpuymgfqtqyiarnundmilvnxsmtnukbuwosgtispuymfvfnqtqyiarndkdmtcdmilvniwsivanhwuabfkswfobavfiaadmcdmfthdrfclnmhsuovanubtvfiaadmcdmbkaxzdcmhdlulogfdmrhfalwmbyhtgtlnhbarozlsofaarpasmysrawvdmodmlpxuioskxuqpawufyfndmilvnawhcoretfky"
+
+    print(index_of_coincidence(s))
+
     s = s.lower()
     s = s.replace(" ", "")
     s = s.replace(",", "")
