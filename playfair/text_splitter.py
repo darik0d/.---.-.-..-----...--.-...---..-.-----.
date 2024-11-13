@@ -97,7 +97,43 @@ def index_of_coincidence(string: str):
     for key in freq:
         ic += freq[key] * (freq[key] - 1)
     ic /= n * (n - 1)
-    return ic
+    return ic, "en" # Currently so
+# Top english bigrams
+bigrams_to_check = dict()
+text = open("corpus/preprocessed/en/eng_news_2005_100K-sentences.txt").read()
+bigrams = re.findall(r".{1,2}", text)
+for bigram in bigrams:
+    if bigram in bigrams_to_check:
+        bigrams_to_check[bigram] += 1
+    else:
+        bigrams_to_check[bigram] = 1
+# Draw it
+bigrams_to_check = dict(sorted(bigrams_to_check.items(), key=lambda item: item[1], reverse=True))
+# Take top 100
+bigrams_to_check = dict(list(bigrams_to_check.items())[:1000])
+def twonorm_frequency_distance(string: str):
+    """
+    Calculate the two norm distance between the bigram frequencies of the string and the bigrams_to_check.
+
+    :param string: The string to calculate the bigram frequencies.
+    :param bigrams_to_check: The bigram frequencies to compare with.
+    """
+    distance = 0
+    bigrams = re.findall(r".{1,2}", string)
+    bigram_frequency = {}
+    for bigram in bigrams:
+        if bigram in bigram_frequency:
+            bigram_frequency[bigram] += 1
+        else:
+            bigram_frequency[bigram] = 1
+    bigram_frequency = dict(sorted(bigram_frequency.items(), key=lambda item: item[1], reverse=True))
+    for bigram in bigrams_to_check:
+        if bigram in bigram_frequency:
+            distance += (bigrams_to_check[bigram] - bigram_frequency[bigram]) ** 2
+        else:
+            distance += bigrams_to_check[bigram] ** 2
+    distance = math.sqrt(distance)
+    return distance, "en" # Currently so
 
 if __name__ == "__main__":
     s = "De naam en inspiratie komen van een Engelse termannealinguitgloeien binnen de metaalbewerking. Het betreft een techniek waarbij metaal verhit wordt en daarna gecontroleerd afgekoeld om de grootte van de kristallen binnen het materiaal te vergroten en daarmee het aantal defecten te verkleinen. "

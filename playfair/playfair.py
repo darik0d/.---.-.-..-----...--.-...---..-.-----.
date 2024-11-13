@@ -179,20 +179,39 @@ class SimulatedAnnealingSolver(Solver):
             if current_temp < 0.1:
                 break
             try:
-                if score < best_score or math.exp((score - best_score) / (current_temp * 1000)) > random.random():
-                    current_key = neighbor_key
-                    if score < best_score:
-                        best_score = score
-                        best_key = neighbor_key
-                        print("##############################################")
-                        print("New best score:", best_score)
-                        print("New best key:", best_key)
-                        print("Decrypted text:", decrypted_text)
-                        print("##############################################")
-                        # Write the result to file:
-                        with open("decrypted.txt", "a") as f:
-                            f.write(decrypted_text + "\n Key: "
-                                    + str(best_key) + "\n Score: " + str(best_score) + "\n\n")
+                if eval_func.__name__ in ["score_text", "twonorm_frequency_distance"]:
+                    if score < best_score or math.exp((score - best_score) / (current_temp)) < random.random():
+                        current_key = neighbor_key
+                        if score < best_score:
+                            best_score = score
+                            best_key = neighbor_key
+                            print("##############################################")
+                            print("New best score:", best_score)
+                            print("New best key:", best_key)
+                            print("Decrypted text:", decrypted_text)
+                            print("##############################################")
+                            # Write the result to file:
+                            with open("decrypted.txt", "a") as f:
+                                f.write(decrypted_text + "\n Key: "
+                                        + str(best_key) + "\n Score: " + str(best_score) + "\n\n")
+                elif eval_func.__name__ == "index_of_coincidence":
+                    if score > best_score or math.exp((score - best_score) / (current_temp)) > random.random():
+                        current_key = neighbor_key
+                        if score > best_score:
+                            best_score = score
+                            best_key = neighbor_key
+                            print("##############################################")
+                            print("New best score:", best_score)
+                            print("New best key:", best_key)
+                            print("Decrypted text:", decrypted_text)
+                            print("##############################################")
+                            # Write the result to file:
+                            with open("decrypted.txt", "a") as f:
+                                f.write(decrypted_text + "\n Key: "
+                                        + str(best_key) + "\n Score: " + str(best_score) + "\n\n")
+                else:
+                    print("Eval function not found")
+                    return
             except OverflowError:
                 print("Overflow error")
                 print("Current temp:", current_temp)
@@ -203,7 +222,8 @@ class SimulatedAnnealingSolver(Solver):
 
             current_temp *= self.cooling_rate
             if self._n >= 1000:
-                break
+                # break
+                pass
 
         self.block.init_from_list(best_key)
         print("Best key found:", best_key)
@@ -218,7 +238,7 @@ class SimulatedAnnealingSolver(Solver):
         i, j = random.sample(range(25), 2)
         neighbor_key[i], neighbor_key[j] = neighbor_key[j], neighbor_key[i]
         self._n += 1
-        if self._n % 5 == 0:
+        if self._n % 500 == 0:
             print("Generated neighbours", self._n, "times")
         return neighbor_key
 
@@ -259,5 +279,7 @@ if __name__ == "__main__":
     block.rand_initialize()
     string = "MUHULOSFOLPVMTRUGNODKNKEUGTRFDENSVDVTPSZSLYIUFNANBNSBFKDDVENAORSSKTLUTGOVPGDSUFDFPSZSLPVRXCWSPSAAMIBVTFSPVMVDAUYDKLMEUUFASSRUFOGVBOMMDTUNFFZVTUOTLUFSKUTUIVTASSRAGRUZLOUTLBRGRYVLOSFOLPVDMLOVXLUSAKZKOUFASSRUFNFFOKDRBGNSEKVAFXAUCTATEODFALMHMTSUFVXYVRZNUSYFNOTSULZTEQIVSKERGOUVSBNUIUFSKAXNSZFNDSVVCBRSAADMTRUMVUFNDVENAURSVOTBFLZTEQIVSUFTFMTSLNAEUCMGSUFGRUTBNAVBCMVNYLODGUFTFPVKEOULMNADAVQNDSVNFMLXVAUSLSEAXBRXVGALRGNCWKCXVNDKCFDENRGPSLURODAEQNUKZFNSOMVMSHNYREYASFDRFKDTWRUUFNGLODGMVTPDALHTSRODAVQVKDAFDENDVLMFNTVVDBUFDRBOGTSNGLODGUFDATAVSOTVLDALERZLUPRTOXAAVUFVXYVRZNUSYFNOUSZSLGNMVUTKDUCLZASLMWRAGRUYVYVOLSAVMUMCMRWEMMVDAWIDKTRKSBWRULOBILMVHMLUFSKDAVUDAVPDBDAVQETCTSENDAVFDQZQBYTSPUTGOVPGDTCTRAVGNDAEUVBAUFDRBCBPVAONVUTMRMVCYRKHOPTAVGACTGVAVRGZROHUYDEASTSASRSAOLMWRVXBRFUKDVWNUPCTSUFGRSVETLOWCASRSANAULMWRVXBRKQKDSUKDVWNUVICWNVRNVSGNDAEYDENGNAVXKFTUKDOURZNDTIRUYCTFNVUFTONAVXKFTUKDRGKAFOUTRZVTBGAOKDBNAVWITRHNOLOBRNNGBDOITEAVKNXKCTSENKIQKDEOTQXACVETGAMVXKVSENAUKDVWNUPVCZDBOSDABEGAKZFNAVYCDVUTLRGNDHWILFIGPVUKTAWBVSQCNAWITRHNNDRPKDANENCWKCTOASTULUSYFUCYOGNDAOYCDVUTBNGSGNNFOTBFKDYGUOTLLTUNTUKDTWNSZFDKDVUFSTZVVPDBQCNABVKGNVXAOIGRRGLOUTOGSLASKDVWNUXRVBVATOKDUFTRYKSPUFTFOGSLMVIXETDVWCUBFDYGFTAVUTHNGNUFTFGBROOATUOGSLDKVSRGOUVSBGKERXTFOTADZRBNVZLUFDVANEVSBNSWCWNVDAVQLUFDVARLCYHNSVOLHCVSRZVLNBASLMWRVXBRKQKDSOKDUFTRYKSPUFTFUKVKTRHNKCDAXSGNDANYEFNGNDGASPSATWVSOTAMGDUHFVRBEMGNDAAUNDKCMVMBASTOXAKZKOKDZRSCNVVWUFGNLTTVDLTRSRAOMCUFVXYVRZBNVNKDSOUTZBGRRXTFOTVLLZZFVBANVDMTRUNEVSBUCYEMYVYVNUAOQTUBTRTCSEASTQUFVSDKRHLFAGVSUIRGUOUSVBYKRBDMTRCIFDWCQCIHDAUBTRGBWTRNASKDPVGQMUTDFRNUAOGAOTVYOSSKXAFRHTFOTULUKSQCTNSVUSIGEMUTLRSWSVFRMUSQ".lower()
     eval_func = text_splitter.score_text
-    solver = SimulatedAnnealingSolver(string, block, eval_func)
+    eval_func = text_splitter.index_of_coincidence
+    eval_func = text_splitter.twonorm_frequency_distance
+    solver = SimulatedAnnealingSolver(string, block, eval_func, initial_temp=2000, cooling_rate=0.99999)
     solver.solve()

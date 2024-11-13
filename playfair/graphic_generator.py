@@ -70,7 +70,54 @@ def generate_graphs_folder(folder):
         plt.savefig(f"stats/{folder}/bigram_frequency_{folder}_part_{i + 1}.png", dpi=700)
         plt.close()
 
+def graph_for_string(text: str, output_path):
+    bigram_frequency = dict()
+    bigrams = re.findall(r".{1,2}", text)
+    for bigram in bigrams:
+        if bigram in bigram_frequency:
+            bigram_frequency[bigram] += 1
+        else:
+            bigram_frequency[bigram] = 1
+    # Draw it
+    bigram_frequency = dict(sorted(bigram_frequency.items(), key=lambda item: item[1], reverse=True))
+
+    # Split the bigrams into chunks
+    bigram_items = list(bigram_frequency.items())
+    num_chunks = math.ceil(len(bigram_items) / max_bigrams_per_graph)
+    if only_top:
+        num_chunks = 1
+    for i in range(num_chunks):
+        chunk = bigram_items[i * max_bigrams_per_graph:(i + 1) * max_bigrams_per_graph]
+        chunk_bigrams = dict(chunk)
+
+        # Generate the graph for each chunk
+        plt.figure(figsize=(10, len(chunk_bigrams) * 0.5))  # Adjust figure height for each chunk
+
+        # Create the horizontal bar chart
+        bars = plt.barh(list(chunk_bigrams.keys()), list(chunk_bigrams.values()), height=0.8)
+
+        # Adjust label size and position
+        plt.ylabel("Bigram", fontsize=12)
+        plt.xlabel("Frequency", fontsize=12)
+        plt.title(f"Bigram frequency", fontsize=14)
+
+        # Make sure labels are not cut off (!)
+        plt.tight_layout()
+
+        # Save the graph for the current chunk
+        plt.savefig(output_path, dpi=700)
+        plt.close()
 
 if __name__ == "__main__":
-    generate_graphs()
-    print("Graphs generated.")
+    # generate_graphs()
+    # print("Graphs generated.")
+    string = "MUHULOSFOLPVMTRUGNODKNKEUGTRFDENSVDVTPSZSLYIUFNANBNSBFKDDVENAORSSKTLUTGOVPGDSUFDFPSZSLPVRXCWSPSAAMIBVTFSPVMVDAUYDKLMEUUFASSRUFOGVBOMMDTUNFFZVTUOTLUFSKUTUIVTASSRAGRUZLOUTLBRGRYVLOSFOLPVDMLOVXLUSAKZKOUFASSRUFNFFOKDRBGNSEKVAFXAUCTATEODFALMHMTSUFVXYVRZNUSYFNOTSULZTEQIVSKERGOUVSBNUIUFSKAXNSZFNDSVVCBRSAADMTRUMVUFNDVENAURSVOTBFLZTEQIVSUFTFMTSLNAEUCMGSUFGRUTBNAVBCMVNYLODGUFTFPVKEOULMNADAVQNDSVNFMLXVAUSLSEAXBRXVGALRGNCWKCXVNDKCFDENRGPSLURODAEQNUKZFNSOMVMSHNYREYASFDRFKDTWRUUFNGLODGMVTPDALHTSRODAVQVKDAFDENDVLMFNTVVDBUFDRBOGTSNGLODGUFDATAVSOTVLDALERZLUPRTOXAAVUFVXYVRZNUSYFNOUSZSLGNMVUTKDUCLZASLMWRAGRUYVYVOLSAVMUMCMRWEMMVDAWIDKTRKSBWRULOBILMVHMLUFSKDAVUDAVPDBDAVQETCTSENDAVFDQZQBYTSPUTGOVPGDTCTRAVGNDAEUVBAUFDRBCBPVAONVUTMRMVCYRKHOPTAVGACTGVAVRGZROHUYDEASTSASRSAOLMWRVXBRFUKDVWNUPCTSUFGRSVETLOWCASRSANAULMWRVXBRKQKDSUKDVWNUVICWNVRNVSGNDAEYDENGNAVXKFTUKDOURZNDTIRUYCTFNVUFTONAVXKFTUKDRGKAFOUTRZVTBGAOKDBNAVWITRHNOLOBRNNGBDOITEAVKNXKCTSENKIQKDEOTQXACVETGAMVXKVSENAUKDVWNUPVCZDBOSDABEGAKZFNAVYCDVUTLRGNDHWILFIGPVUKTAWBVSQCNAWITRHNNDRPKDANENCWKCTOASTULUSYFUCYOGNDAOYCDVUTBNGSGNNFOTBFKDYGUOTLLTUNTUKDTWNSZFDKDVUFSTZVVPDBQCNABVKGNVXAOIGRRGLOUTOGSLASKDVWNUXRVBVATOKDUFTRYKSPUFTFOGSLMVIXETDVWCUBFDYGFTAVUTHNGNUFTFGBROOATUOGSLDKVSRGOUVSBGKERXTFOTADZRBNVZLUFDVANEVSBNSWCWNVDAVQLUFDVARLCYHNSVOLHCVSRZVLNBASLMWRVXBRKQKDSOKDUFTRYKSPUFTFUKVKTRHNKCDAXSGNDANYEFNGNDGASPSATWVSOTAMGDUHFVRBEMGNDAAUNDKCMVMBASTOXAKZKOKDZRSCNVVWUFGNLTTVDLTRSRAOMCUFVXYVRZBNVNKDSOUTZBGRRXTFOTVLLZZFVBANVDMTRUNEVSBUCYEMYVYVNUAOQTUBTRTCSEASTQUFVSDKRHLFAGVSUIRGUOUSVBYKRBDMTRCIFDWCQCIHDAUBTRGBWTRNASKDPVGQMUTDFRNUAOGAOTVYOSSKXAFRHTFOTULUKSQCTNSVUSIGEMUTLRSWSVFRMUSQ".lower()
+    #graph_for_string(string, "bigram_test.png")
+    string = string.replace("uf", "TH").replace("kd", "HE").replace("da", "IN")
+    print(string)
+
+    """
+    uf => th
+    kd => he
+    da => in
+    """
