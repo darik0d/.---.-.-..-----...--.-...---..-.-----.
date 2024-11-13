@@ -38,4 +38,11 @@ def to_playfair_format_text(text):
     #bigrams = [bigram if bigram[0] != bigram[1] else bigram[0] + "x" for bigram in bigrams]
 
 
+
+# Does not work yet
 to_playfair_format_folder("preprocessed/de")
+to_playfair_format_folder("preprocessed/nl")
+to_playfair_format_folder("preprocessed/fr")
+to_playfair_format_folder("preprocessed/es")
+to_playfair_format_folder("preprocessed/it")
+to_playfair_format_folder("preprocessed/en")

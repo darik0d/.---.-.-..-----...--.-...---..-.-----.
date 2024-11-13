@@ -24,6 +24,8 @@ import math
 
 def generate_graphs_folder(folder):
     # Count the frequency of each bigram
+    if folder in []: # Add languages to skip
+        return
     bigram_frequency = dict()
     # Create output folder
     os.makedirs(f"stats/{folder}", exist_ok=True)

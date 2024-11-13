@@ -179,7 +179,7 @@ class SimulatedAnnealingSolver(Solver):
             if current_temp < 0.1:
                 break
             try:
-                if score < best_score or math.exp((score - best_score) / (current_temp * 100)) > random.random():
+                if score < best_score or math.exp((score - best_score) / (current_temp * 1000)) > random.random():
                     current_key = neighbor_key
                     if score < best_score:
                         best_score = score
