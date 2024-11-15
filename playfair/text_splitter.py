@@ -107,10 +107,11 @@ for bigram in bigrams:
         bigrams_to_check[bigram] += 1
     else:
         bigrams_to_check[bigram] = 1
-# Draw it
+for bigram in bigrams_to_check:
+    bigrams_to_check[bigram] /= len(bigrams)
+# Sort
 bigrams_to_check = dict(sorted(bigrams_to_check.items(), key=lambda item: item[1], reverse=True))
-# Take top 100
-bigrams_to_check = dict(list(bigrams_to_check.items())[:1000])
+
 def twonorm_frequency_distance(string: str):
     """
     Calculate the two norm distance between the bigram frequencies of the string and the bigrams_to_check.
@@ -127,11 +128,11 @@ def twonorm_frequency_distance(string: str):
         else:
             bigram_frequency[bigram] = 1
     bigram_frequency = dict(sorted(bigram_frequency.items(), key=lambda item: item[1], reverse=True))
+    for bigram in bigram_frequency:
+        bigram_frequency[bigram] /= len(bigrams)
     for bigram in bigrams_to_check:
         if bigram in bigram_frequency:
             distance += (bigrams_to_check[bigram] - bigram_frequency[bigram]) ** 2
-        else:
-            distance += bigrams_to_check[bigram] ** 2
     distance = math.sqrt(distance)
     return distance, "en" # Currently so
 
