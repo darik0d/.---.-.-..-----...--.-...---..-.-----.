@@ -178,6 +178,25 @@ class PermutatieMatrix:
                 print('T' if column.is_assigned() else 'F', end='|')
             print()
 
+    def get_permutations(self):
+        """
+        Get the plug mapping of the enigma machine used
+        """
+        out = []
+
+        for i, row in enumerate(self.matrix):
+            for j, column in enumerate(row):
+
+                if i > j:
+                    continue
+
+                if not column.is_assigned():
+                    continue
+
+                out.append((chr(i + ord('A')), chr(j + ord('A'))))
+
+        return out
+
 
 if __name__ == "__main__":
     start = datetime.datetime.now()
@@ -230,5 +249,7 @@ if __name__ == "__main__":
     end = datetime.datetime.now()
 
     print("exe time", (end - start).total_seconds())
+
+    print(pm.get_permutations())
 
 
