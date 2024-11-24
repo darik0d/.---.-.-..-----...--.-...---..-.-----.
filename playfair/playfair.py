@@ -159,13 +159,15 @@ class BruteforceWithAutocheck(Solver):
 # Attempt 3: Simulated annealing: https://en.wikipedia.org/wiki/Simulated_annealing
 class SimulatedAnnealingSolver(Solver):
     def __init__(self, string: str, block: PlayFairBlock, eval_func, initial_temp=100.0, cooling_rate=0.99,
-                 min_temp=0.1):
+                 min_temp=0.1, forced_decryption=None):
         super().__init__(string, block)
         self.eval_func = eval_func
         self.initial_temp = initial_temp
         self.cooling_rate = cooling_rate
         self.min_temp = min_temp
         self._n = 0
+        self._wasted = 0
+        self.forced_decryption = forced_decryption
 
     def solve(self):
         current_key = self.block.grid.copy()
@@ -175,13 +177,35 @@ class SimulatedAnnealingSolver(Solver):
 
         while current_temp > self.min_temp:
             neighbor_key = self.generate_neighbor(current_key)
+            if self.forced_decryption is not None and not self.checkGivenRules({"uf": "th", "kd": "he", "da": "in"}):
+                self.block.init_from_list(neighbor_key)
+                if not self.checkForcedRules():
+                    self._wasted += 1
+                    if self._wasted % 100000 == 0:
+                        print("Wasted", self._wasted, "times")
+                    # self.block.rand_initialize()
+                    continue
+                elif not self.checkGivenRules({"da": "in"}):
+                    # Generate a new key
+                    current_key = neighbor_key
+                    self._wasted += 1
+                    if self._wasted % 100000 == 0:
+                        print("Wasted", self._wasted, "times")
+                    continue
+                elif self._wasted == 0:
+                    break
+                else:
+                    self._wasted = 0
+                    print("Found a valid key:", neighbor_key)
+                    break
+            self.block.init_from_list(neighbor_key)
             decrypted_text = self.decrypt_with_key(neighbor_key)
             score, _ = self.eval_func(decrypted_text) # TODO: change returns in the main code
             if current_temp < 0.1:
                 break
             try:
                 if eval_func.__name__ in ["score_text", "twonorm_frequency_distance"]:
-                    if score < best_score or math.exp((score - best_score) / (current_temp)) > random.random():
+                    if score < best_score:
                         current_key = neighbor_key
                         if score < best_score:
                             best_score = score
@@ -221,9 +245,9 @@ class SimulatedAnnealingSolver(Solver):
                 # TODO: Resolve the issue?
 
 
-            current_temp *= self.cooling_rate
+            current_temp *= (self.cooling_rate + (1 - current_temp / self.initial_temp) * 0.001)
             if self._n % 5000 == 0:
-                print(f"Generated {self._n} neighbours", "Best score:", best_score)
+                print(f"Generated {self._n} neighbours", "Best score:", best_score, "Best key:", best_key)
 
         self.block.init_from_list(best_key)
         # print("Best key found:", best_key)
@@ -262,6 +286,21 @@ class SimulatedAnnealingSolver(Solver):
         decrypted = "".join(self.block.decrypt_bigram(bigram) for bigram in bigrams)
         return decrypted
 
+    def setForcedDecryption(self, forced_decryption: dict):
+        self.forced_decryption = forced_decryption
+
+    def checkForcedRules(self):
+        for forced in self.forced_decryption:
+            if self.block.decrypt_bigram(forced) != self.forced_decryption[forced]:
+                return False
+        return True
+
+    def checkGivenRules(self, forced_decryption):
+        for forced in forced_decryption:
+            if self.block.decrypt_bigram(forced) != forced_decryption[forced]:
+                return False
+        return True
+
 # Attempt 4: Frequency heuristic / Index of coincidence
 
 # Attempt 5: Play not fair
@@ -296,10 +335,14 @@ if __name__ == "__main__":
     eval_func = text_splitter.twonorm_frequency_distance
 
     the_bestest = 0.07249154913272611
+    thresh = 0.065
     while True:
-        solver = SimulatedAnnealingSolver(string, block, eval_func, initial_temp=2000, cooling_rate=0.9999)
+        solver = SimulatedAnnealingSolver(string, block, eval_func, initial_temp=300, cooling_rate=0.999)
+        solver.block.init_from_list(['i', 'o', 't', 'u', 'a', 'l', 'p', 'z', 'v', 'm', 'w', 'n', 'f', 'h', 'k', 'c', 'r', 'g', 'x', 'q', 'b', 'y', 's', 'd', 'e'])
+        solver.setForcedDecryption({"uf": "th", "kd": "he", "da": "in"})
+        # print(solver.checkForcedRules())
         best, best_score = solver.solve()
-        if the_bestest is None or best_score < the_bestest:
+        if the_bestest is None or best_score < the_bestest or best_score < thresh:
             the_bestest = best_score
             print("New best score:", the_bestest)
             with open("decrypted.txt", "a") as f:
@@ -310,3 +353,8 @@ if __name__ == "__main__":
 
         # Update the block
         block = PlayFairBlock().rand_initialize()
+    """
+    uf => th
+    kd => he
+    da => in
+    """
