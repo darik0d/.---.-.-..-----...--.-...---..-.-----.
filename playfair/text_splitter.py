@@ -136,6 +136,47 @@ def twonorm_frequency_distance(string: str):
     distance = math.sqrt(distance)
     return distance, "en" # Currently so
 
+# Quadrams
+
+# Top english bigrams
+quadrams_to_check = dict()
+text = open("corpus/preprocessed/en/eng_news_2005_100K-sentences.txt").read()
+quadrams = re.findall(r"[a-z]{4}", text)
+for quadram in quadrams:
+    if quadram in quadrams_to_check:
+        quadrams_to_check[quadram] += 1
+    else:
+        quadrams_to_check[quadram] = 1
+for quadram in quadrams_to_check:
+    quadrams_to_check[quadram] /= len(quadrams)
+    quadrams_to_check[quadram] = math.log(quadrams_to_check[quadram])
+# Sort
+quadrams_to_check = dict(sorted(quadrams_to_check.items(), key=lambda item: item[1], reverse=True))
+
+def twonorm_frequency_distance_with_quadrams(string: str):
+    """
+    Calculate the two norm distance between the quadram frequencies of the string and the quadrams_to_check.
+
+    :param string: The string to calculate the quadram frequencies.
+    :param quadrams_to_check: The quadram frequencies to compare with.
+    """
+    distance = 0
+    quadrams = re.findall(r"[a-z]{4}", string)
+    quadram_frequency = {}
+    for quadram in quadrams:
+        if quadram in quadram_frequency:
+            quadram_frequency[quadram] += 1
+        else:
+            quadram_frequency[quadram] = 1
+    quadram_frequency = dict(sorted(quadram_frequency.items(), key=lambda item: item[1], reverse=True))
+    for quadram in quadram_frequency:
+        quadram_frequency[quadram] /= len(quadrams)
+    for quadram in quadrams_to_check:
+        if quadram in quadram_frequency:
+            distance += (quadrams_to_check[quadram] - quadram_frequency[quadram]) ** 2
+    distance = math.sqrt(distance)
+    return distance, "en" # Currently so
+
 if __name__ == "__main__":
     s = "De naam en inspiratie komen van een Engelse termannealinguitgloeien binnen de metaalbewerking. Het betreft een techniek waarbij metaal verhit wordt en daarna gecontroleerd afgekoeld om de grootte van de kristallen binnen het materiaal te vergroten en daarmee het aantal defecten te verkleinen. "
     s = "The name of the algorithm comes from annealing in metallurgy, a technique involving heating and controlled cooling of a material to alter its physical properties. Both are attributes of the material that depend on their thermodynamic free energy."
