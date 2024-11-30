@@ -6,6 +6,7 @@ import re
 from abc import abstractmethod
 import math
 import text_splitter
+import string
 
 
 # Attempt #1: Bruteforce & manually check
@@ -158,13 +159,10 @@ class BruteforceWithAutocheck(Solver):
 
 # Attempt 3: Simulated annealing: https://en.wikipedia.org/wiki/Simulated_annealing
 class SimulatedAnnealingSolver(Solver):
-    def __init__(self, string: str, block: PlayFairBlock, eval_func, initial_temp=100.0, cooling_rate=0.99,
-                 min_temp=0.1, forced_decryption=None):
+    def __init__(self, string: str, block: PlayFairBlock, eval_func, number_of_steps=1000, forced_decryption=None):
         super().__init__(string, block)
         self.eval_func = eval_func
-        self.initial_temp = initial_temp
-        self.cooling_rate = cooling_rate
-        self.min_temp = min_temp
+        self.steps = number_of_steps
         self._n = 0
         self._wasted = 0
         self.forced_decryption = forced_decryption
@@ -172,111 +170,110 @@ class SimulatedAnnealingSolver(Solver):
     def solve(self):
         current_key = self.block.grid.copy()
         best_key = current_key
-        current_temp = self.initial_temp
         best_score, _ = self.eval_func(self.decrypt_with_key(current_key))
+        current_score = best_score
 
-        while current_temp > self.min_temp:
+        for k in range(self.steps):
+            current_temp = 1.0 - float((k + 1) / self.steps)
             neighbor_key = self.generate_neighbor(current_key)
-            if self.forced_decryption is not None and not self.checkGivenRules({"uf": "th", "kd": "he", "da": "in"}):
-                self.block.init_from_list(neighbor_key)
-                if not self.checkForcedRules():
-                    self._wasted += 1
-                    if self._wasted % 100000 == 0:
-                        print("Wasted", self._wasted, "times")
-                    # self.block.rand_initialize()
-                    continue
-                elif not self.checkGivenRules({"da": "in"}):
-                    # Generate a new key
-                    current_key = neighbor_key
-                    self._wasted += 1
-                    if self._wasted % 100000 == 0:
-                        print("Wasted", self._wasted, "times")
-                    continue
-                elif self._wasted == 0:
-                    break
-                else:
-                    self._wasted = 0
-                    print("Found a valid key:", neighbor_key)
-                    break
             self.block.init_from_list(neighbor_key)
             decrypted_text = self.decrypt_with_key(neighbor_key)
-            score, _ = self.eval_func(decrypted_text) # TODO: change returns in the main code
-            if current_temp < 0.1:
+            score, _ = self.eval_func(decrypted_text)
+            if current_temp == 0:
                 break
-            try:
-                if eval_func.__name__ in ["score_text", "twonorm_frequency_distance"]:
-                    if score < best_score:
-                        current_key = neighbor_key
-                        if score < best_score:
-                            best_score = score
-                            best_key = neighbor_key
-                            # print("##############################################")
-                            # print("New best score:", best_score)
-                            # print("New best key:", best_key)
-                            # print("Decrypted text:", decrypted_text)
-                            # print("##############################################")
-                            # # Write the result to file:
-                            # with open("decrypted.txt", "a") as f:
-                            #     f.write(decrypted_text + "\n Key: "
-                            #             + str(best_key) + "\n Score: " + str(best_score) + "\n\n")
-                elif eval_func.__name__ == "index_of_coincidence":
-                    if score > best_score or math.exp((score - best_score) / (current_temp)) > random.random():
-                        current_key = neighbor_key
-                        if score > best_score:
-                            best_score = score
-                            best_key = neighbor_key
-                            # print("##############################################")
-                            # print("New best score:", best_score)
-                            # print("New best key:", best_key)
-                            # print("Decrypted text:", decrypted_text)
-                            # print("##############################################")
-                            # # Write the result to file:
-                            # with open("decrypted.txt", "a") as f:
-                            #     f.write(decrypted_text + "\n Key: "
-                            #             + str(best_key) + "\n Score: " + str(best_score) + "\n\n")
-                else:
-                    print("Eval function not found")
-                    return
-            except OverflowError:
-                print("Overflow error")
-                print("Current temp:", current_temp)
-                print("Score:", score)
-                print("Best score:", best_score)
-                # TODO: Resolve the issue?
+            if score < current_score:
+                current_key = neighbor_key
+                current_score = score
+                if score < best_score:
+                    best_score = score
+                    best_key = neighbor_key
+            elif math.exp((current_score - score)*math.sqrt(self.steps)/current_temp)*0.2 > random.uniform(0, 1):
+                number = math.exp((current_score - score)*math.sqrt(self.steps)/current_temp)*0.2
+                current_key = neighbor_key
+                self._wasted += 1
+                if self._wasted % 100 == 0:
+                    print(f"Wasted {self._wasted} times. Randomness: {number}")
 
-
-            current_temp *= (self.cooling_rate + (1 - current_temp / self.initial_temp) * 0.001)
-            if self._n % 5000 == 0:
-                print(f"Generated {self._n} neighbours", "Best score:", best_score, "Best key:", best_key)
+            # if k % 1000 == 10000:
+            #     print(f"Generated {self._n} neighbours", "Best score:", best_score,
+            #           "Best key:", best_key, "Decrypted:\n", self.decrypt_with_key(best_key))
 
         self.block.init_from_list(best_key)
-        # print("Best key found:", best_key)
-        # print("Decrypted text:", self.decrypt_with_key(best_key))
-        # print("Splitted text:", text_splitter.infer_spaces(self.decrypt_with_key(best_key), _))
-        # print("Best score:", best_score)
-        # print("Best language:", _)
-        # print("Number of iterations:", self._n)
+
+        return best_key, best_score
+    def daria_annealing(self):
+        current_key = self.block.grid.copy()
+        best_key = current_key
+        best_score, _ = self.eval_func(self.decrypt_with_key(current_key))
+        current_score = best_score
+        minimum_found = False
+
+        while not minimum_found:
+            neighbor_key = self.generate_neighbor(current_key)
+            self.block.init_from_list(neighbor_key)
+            decrypted_text = self.decrypt_with_key(neighbor_key)
+            score, _ = self.eval_func(decrypted_text)
+            if score < current_score:
+                self._wasted = 0
+                current_key = neighbor_key
+                current_score = score
+                if score < best_score:
+                    best_score = score
+                    best_key = neighbor_key
+            else:
+                self._wasted += 1
+                if self._wasted == 2000:
+                    print(f"Wasted {self._wasted} times. Switch to check minimum mode")
+                    l1 = list(range(25))
+                    random.shuffle(l1)
+                    l2 = list(range(25))
+                    random.shuffle(l2)
+                    for i in l1:
+                        if self._wasted == 0:
+                            break
+                        for j in l2:
+                            if i == j: continue
+                            neighbor_key = current_key
+                            neighbor_key[i], neighbor_key[j] = neighbor_key[j], neighbor_key[i]
+                            self.block.init_from_list(neighbor_key)
+                            decrypted_text = self.decrypt_with_key(neighbor_key)
+                            score, _ = self.eval_func(decrypted_text)
+                            if score < current_score:
+                                print("Not local minimum, go further")
+                                current_key = neighbor_key
+                                current_score = score
+                                self._wasted = 0
+                                if score < best_score:
+                                    best_score = score
+                                    best_key = neighbor_key
+                                break
+                    if self._wasted != 0:
+                        print(f"Found local minimum with score {best_score}")
+                        minimum_found = True
+
+        self.block.init_from_list(best_key)
+        print(text_splitter.infer_spaces(self.decrypt_with_key(best_key), "en"))
 
         return best_key, best_score
 
     def generate_neighbor(self, key):
         neighbor_key = key[:]
-        if random.random() < 0.5:
-            # Swap two random elements
-            i, j = random.sample(range(25), 2)
-            neighbor_key[i], neighbor_key[j] = neighbor_key[j], neighbor_key[i]
-        else:
-            # Rotate a random row or column
-            if random.random() < 0.5:  # Rotate row
-                row = random.randint(0, 4)
-                start = row * 5
-                neighbor_key[start:start + 5] = neighbor_key[start + 1:start + 5] + neighbor_key[start:start + 1]
-            else:  # Rotate column
-                col = random.randint(0, 4)
-                col_items = [key[col + 5 * i] for i in range(5)]
-                rotated = col_items[1:] + col_items[:1]
-                for i in range(5):
-                    neighbor_key[col + 5 * i] = rotated[i]
+        # if random.random() < 0.5:
+        # Swap two random elements
+        i, j = random.sample(range(25), 2)
+        neighbor_key[i], neighbor_key[j] = neighbor_key[j], neighbor_key[i]
+        # else:
+        #     # Rotate a random row or column
+        #     if random.random() < 0.5:  # Rotate row
+        #         row = random.randint(0, 4)
+        #         start = row * 5
+        #         neighbor_key[start:start + 5] = neighbor_key[start + 1:start + 5] + neighbor_key[start:start + 1]
+        #     else:  # Rotate column
+        #         col = random.randint(0, 4)
+        #         col_items = [key[col + 5 * i] for i in range(5)]
+        #         rotated = col_items[1:] + col_items[:1]
+        #         for i in range(5):
+        #             neighbor_key[col + 5 * i] = rotated[i]
         self._n += 1
         return neighbor_key
 
@@ -301,7 +298,7 @@ class SimulatedAnnealingSolver(Solver):
                 return False
         return True
 
-# Attempt 4: Frequency heuristic / Index of coincidence
+# Attempt 4: Frequency heuristic / Index of coincidence: see above, ignore second
 
 # Attempt 5: Play not fair
 
@@ -334,17 +331,21 @@ if __name__ == "__main__":
 
     eval_func = text_splitter.twonorm_frequency_distance
 
-    the_bestest = 0.07249154913272611
-    thresh = 0.065
+    # solver = SimulatedAnnealingSolver(string, block, eval_func, 1000)
+    # print(solver.decrypt_with_key(['l', 's', 't', 'u', 'o', 'w', 'p', 'z', 'c', 'n', 'm', 'y', 'f', 'h', 'k', 'i', 'b', 'g', 'x', 'q', 'v', 'a', 'r', 'd', 'e']))
+
+    thresh = 0.0625
+    the_bestest = thresh
     while True:
-        solver = SimulatedAnnealingSolver(string, block, eval_func, initial_temp=300, cooling_rate=0.999)
-        solver.block.init_from_list(['i', 'o', 't', 'u', 'a', 'l', 'p', 'z', 'v', 'm', 'w', 'n', 'f', 'h', 'k', 'c', 'r', 'g', 'x', 'q', 'b', 'y', 's', 'd', 'e'])
-        solver.setForcedDecryption({"uf": "th", "kd": "he", "da": "in"})
+        solver = SimulatedAnnealingSolver(string, block, eval_func, 5000)
+        while solver.block.decrypt_bigram("uf") != "th":
+            solver.block.rand_initialize()
+        #solver.setForcedDecryption({"uf": "th", "kd": "he", "da": "in"})
         # print(solver.checkForcedRules())
-        best, best_score = solver.solve()
-        if the_bestest is None or best_score < the_bestest or best_score < thresh:
+        best, best_score = solver.daria_annealing()
+        if best_score < the_bestest or best_score < thresh:
             the_bestest = best_score
-            print("New best score:", the_bestest)
+            print("\033[92mNew best score:\033[00m", the_bestest)
             with open("decrypted.txt", "a") as f:
                 f.write(str(time.time()) + "\n" +
                         "New best score: " + str(the_bestest) + "\n" +
