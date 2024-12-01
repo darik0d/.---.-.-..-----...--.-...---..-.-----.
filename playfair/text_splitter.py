@@ -98,17 +98,21 @@ def index_of_coincidence(string: str):
         ic += freq[key] * (freq[key] - 1)
     ic /= n * (n - 1)
     return ic, "en" # Currently so
+
 # Top english bigrams
 bigrams_to_check = dict()
 text = open("corpus/preprocessed/en/eng_news_2005_100K-sentences.txt").read()
 bigrams = re.findall(r".{1,2}", text)
+bigrams.extend(re.findall(r".{1,2}", text[1:]))
 for bigram in bigrams:
     if bigram in bigrams_to_check:
         bigrams_to_check[bigram] += 1
     else:
         bigrams_to_check[bigram] = 1
 for bigram in bigrams_to_check:
-    bigrams_to_check[bigram] /= len(bigrams)
+    bigrams_to_check[bigram] += 1
+    bigrams_to_check[bigram] /= (len(bigrams) + 1) # Smoothing!
+    bigrams_to_check[bigram] = math.log(bigrams_to_check[bigram])
 # Sort
 bigrams_to_check = dict(sorted(bigrams_to_check.items(), key=lambda item: item[1], reverse=True))
 
@@ -121,6 +125,7 @@ def twonorm_frequency_distance(string: str):
     """
     distance = 0
     bigrams = re.findall(r".{1,2}", string)
+    bigrams.extend(re.findall(r".{1,2}", string[1:]))
     bigram_frequency = {}
     for bigram in bigrams:
         if bigram in bigram_frequency:
@@ -129,7 +134,9 @@ def twonorm_frequency_distance(string: str):
             bigram_frequency[bigram] = 1
     bigram_frequency = dict(sorted(bigram_frequency.items(), key=lambda item: item[1], reverse=True))
     for bigram in bigram_frequency:
+        # bigram_frequency[bigram] += 1
         bigram_frequency[bigram] /= len(bigrams)
+        bigram_frequency[bigram] = math.log(bigram_frequency[bigram])
     for bigram in bigrams_to_check:
         if bigram in bigram_frequency:
             distance += (bigrams_to_check[bigram] - bigram_frequency[bigram]) ** 2
@@ -142,6 +149,9 @@ def twonorm_frequency_distance(string: str):
 quadrams_to_check = dict()
 text = open("corpus/preprocessed/en/eng_news_2005_100K-sentences.txt").read()
 quadrams = re.findall(r"[a-z]{4}", text)
+quadrams.extend(re.findall(r"[a-z]{4}", text[1:]))
+quadrams.extend(re.findall(r"[a-z]{4}", text[2:]))
+quadrams.extend(re.findall(r"[a-z]{4}", text[3:]))
 for quadram in quadrams:
     if quadram in quadrams_to_check:
         quadrams_to_check[quadram] += 1
@@ -162,6 +172,9 @@ def twonorm_frequency_distance_with_quadrams(string: str):
     """
     distance = 0
     quadrams = re.findall(r"[a-z]{4}", string)
+    quadrams.extend(re.findall(r"[a-z]{4}", string[1:]))
+    quadrams.extend(re.findall(r"[a-z]{4}", string[2:]))
+    quadrams.extend(re.findall(r"[a-z]{4}", string[3:]))
     quadram_frequency = {}
     for quadram in quadrams:
         if quadram in quadram_frequency:
@@ -171,6 +184,7 @@ def twonorm_frequency_distance_with_quadrams(string: str):
     quadram_frequency = dict(sorted(quadram_frequency.items(), key=lambda item: item[1], reverse=True))
     for quadram in quadram_frequency:
         quadram_frequency[quadram] /= len(quadrams)
+        quadram_frequency[quadram] = math.log(quadram_frequency[quadram])
     for quadram in quadrams_to_check:
         if quadram in quadram_frequency:
             distance += (quadrams_to_check[quadram] - quadram_frequency[quadram]) ** 2
