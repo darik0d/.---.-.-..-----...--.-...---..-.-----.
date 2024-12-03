@@ -2,7 +2,7 @@
 
 ## Oplossing
 
-Raw decrypted tekst:
+Rauwe ontcijferde tekst:
 ```text
 DOEMAARGEWOONALSOFIKERNIETBENZEIIKTEGENHETKINDDATVANDEHONGERAANHETSTERVENWASENDATIKPROBEERDETEFOTOGRAFERENIKWASZENUWACHTIGENWOUDATIKEENPILTESLIKKENHADDIEHETBEVENVANMIJNHANDENZOUSTOPPENERGENSVOELDEIKDATDITMIJNFOTOZOUWORDENDEFOTODIEFOTODIEMIJNGROTEDOORBRAAKZOUINLUIDENWAARDOORIKMIJNMARKTWAARDEKONOPDRIJVENDIEHETMIJZOUTOESTAANDEGROTEBAASVANREUTERSTEVRAGENOFHIJMIJEENSTERUGKONBELLENWANNEERHETMIJBETERPASTEEENFOTOGRAAFVOELTZOIETSDEWERELDBEROEMDEHENRICARTIERBRESSONVOELDEHETTOENHIJDATJONGETJEMETDETWEEWIJNFLESSENINDEPARIJSERUEMOUFFETARDVASTLEGDEELLIOTERWITTVOELDEHETTOENDIENEGERVOORHETOOGVANDECAMERAZIJNTONGUITSTAKALFREDSTIEGLITZVOELDEHETTOENDATMOOIEMEISJEMETDENOGMOOIEREVINGERSHAARJASHADDICHTGEKNOOPTOPHETJUISTEMOMENTENEDWARDSTEICHENHADHONDERDENKIEKJESVANGRETAGARBOGESCHOTENMAARHADNOGTIJDENSHETSCHERPSTELLENVANZIJNLENSGEVOELDDITWORDTHETENIGEWARESCHONEULTIEMEPORTRETVANDEGODINHETZELFDEALSWATIKVOELDEMETHETUITGEHONGERDEKINDINMIJNVIZIERZALIGOPAVONDENDIENERGENSVOORDEUGENDANVOORFLAUWEKULHOORJEWELEENSBEWERENDATFOTOGRAFIEVEELZONIETALLESMETGELUKVANDOENHEEFTENDANBEGINNENZEOVERDEMAKERVANDEFOTODIEIEDEREENKENTHETNAAKTEMEISJEVERBRANDRENNENDMETDEARMENOPENCHRISTUSMETEENKUTALSDEFOTOGRAAFNIETTOEVALLIGOPDEPLAATSVANHETNAPALMBOMBARDEMENTWASGEWEESTZOREDENERENZEDANHADHIJNOOITDIEFOTOKUNNENSCHIETENENDUSHEEFTHETTEMAKENMETGELUKTJAUGAATTOCHNIETMOPPERENDATIKHETGELUKHADDATERVOORMIJNOGENEENKINDLAGTECREPERENIKHADDATGELUKNIETIKHADDATTALENTZOALSROBERTCAPAHETTALENTHADDENEUSHADMETZIJNCAMERAOPDEPLAATSTEZIJNWAAREENSOLDAATDEHERSENENUITDEKOPWERDENGESCHOTENGELUKZEGGENBERGBEKLIMMERSDIEEENMOORDENDESTEENLAWINEOPDRIECENTIMETERVANHUNSMIKKELZAGENVOORBIJRAZENGELUKISOPDENDUUREENKWESTIEVANBEKWAAMHEIDIKWEETDATZEDAARGELIJKINHEBBENI
 ```
@@ -38,20 +38,20 @@ VOORBIJ RAZEN GELUK IS OP DEN DUUR EEN KWESTIE VAN BEKWAAMHEID IK WEET DAT ZE DA
 Van het boek 'Problemski Hotel' van 'Dimitri Verhulst'
 
 ## oplossings methode
-eerst heb ik de Enkel Kolom Transpositie achterhaalt.
+eerst heb ik de Enkelkolom Transpositie achterhaalt.
 Vervolgens [simon singh cracking the vigenere cipher](https://www.simonsingh.net/The_Black_Chamber/vigenere_cracking_tool.html)
-gebruikt om de laatste sleutel (VERHULST en text te achterhalen.
+gebruikt om de laatste sleutel (VERHULST) en text te achterhalen.
 
-Tot slot om het meer automatisch te doen heb ik een gelijkwaardig systeem implementer zoals de Simon Singh cipher, zodat het automatisch de tekst
+Tot slot , heb ik een gelijkwaardig systeem geimplementeerd zoals de Simon Singh vigenere cipher cracking tool, zodat het automatisch de tekst
 ontcijferd.
 
-### Enkel Kolom Transpositie
+### Enkelkolom Transpositie
 Een eigenschap van Vigenere is dat deze cipher veel herhaling heeft (vooral woord delen van lengte 3).
-Deze eigenschap wordt geëxploiteerd voor het oplossen van de Enkel Kolom Transpositie.
-Hierbij wordt enkele Enkel Kolom Transpositie uitgevoerd. Vervolgens wordt er door middel van **Suffix Arrays (echt iets fantastisch)**
-makkelijk gezocht naar common prefixes (CP) in de tekst. Als metric pakken we de Enkel Kolom Transpositie zijn CP. We nemen de decryption dat de hoogste CP hoeveelheid heeft van 
-lengte 3. Gelukkig voor ons kwam dit first try uit op de ontcijfering van de Enkel Kolom Transpositie.
+Deze eigenschap wordt geëxploiteerd voor het oplossen van de Enkelkolom Transpositie.
+Hierbij wordt elke Enkelkolom Transpositie uitgevoerd. Vervolgens wordt er door middel van **Suffix Arrays** ([suffix array explanation](https://cp-algorithms.com/string/suffix-array.html))
+makkelijk gezocht naar common prefixes (CP) in de tekst. Als metric pakken we de Enkelkolom Transpositie zijn CP. We nemen de decryption dat de hoogste CP hoeveelheid heeft van 
+lengte 3. Gelukkig voor ons kwam dit na de eerste poging uit op de ontcijfering van de Enkelkolom Transpositie.
 
 ### Vigenere Cipher
-De vigenere cijfer voert steeds een Ceaser Cipher uit, zodat voor iedere positie mod key lengte, de meest voorkomende character is gelijkgesteld aan 'E'.
-We maken wel gebruik van het feit dat we de key lengte weten (kan via trial en error/ Simon Singh tool).
+De vigenere cijfer voert steeds een Ceaser Cipher uit, zodat voor iedere groep posities (met deelfde mod key lengte), de meest voorkomende character is gelijkgesteld aan 'E'.
+We maken wel gebruik van het feit dat we de key lengte weten (kan via trial en error/ Simon Singh tool). Door steeds de meest frequente character te linken aan de chracter 'E', komen we snel tot het jusite antwoord.
