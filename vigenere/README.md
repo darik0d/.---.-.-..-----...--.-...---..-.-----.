@@ -37,12 +37,12 @@ VOORBIJ RAZEN GELUK IS OP DEN DUUR EEN KWESTIE VAN BEKWAAMHEID IK WEET DAT ZE DA
 
 Van het boek 'Problemski Hotel' van 'Dimitri Verhulst'
 
-## oplossings methode
-eerst heb ik de Enkelkolom Transpositie achterhaalt.
-Vervolgens [simon singh cracking the vigenere cipher](https://www.simonsingh.net/The_Black_Chamber/vigenere_cracking_tool.html)
+## oplossing-methode
+Eerst heb ik de Enkelkolom Transpositie achterhaalt.
+Vervolgens [simon Singh cracking the vigenere cipher](https://www.simonsingh.net/The_Black_Chamber/vigenere_cracking_tool.html)
 gebruikt om de laatste sleutel (VERHULST) en text te achterhalen.
 
-Tot slot , heb ik een gelijkwaardig systeem geimplementeerd zoals de Simon Singh vigenere cipher cracking tool, zodat het automatisch de tekst
+Tot slot, heb ik een gelijkwaardig systeem geimplementeerd zoals de Simon Singh vigenere cipher cracking tool, zodat het automatisch de tekst
 ontcijferd.
 
 ### Enkelkolom Transpositie
@@ -62,3 +62,8 @@ We maken wel gebruik van het feit dat we de key lengte weten (kan via trial en e
 - ``TranspositionCipher.py`` voert de Enkelkolom transpositie encrypt en decrypt uit.
 - ``VigenereSolver.py`` kraak de vigenere zelf, door steeds Cesar ciphers uit te voeren, en steeds de meest frequente character gelijk te stellen aan 'E'
 - ``main.py`` hier is de functie ``find_highest_cp``, deze functie voert alle mogelijke Enkelkolom transposities uit, en behoudt de key, van de resulterende transpositie decryptie die de meeste common prefixes heeft. Deze file voert ook de hele decryptie uit
+
+### References
+- Course Material Code Theory from Professor S. Symens
+- Vigenere cracking tool (https://www.simonsingh.net/The_Black_Chamber/vigenere_cracking_tool.html) from Simon Singh 
+- Suffix Array (https://cp-algorithms.com/string/suffix-array.html) Mainly from Jakobkogler

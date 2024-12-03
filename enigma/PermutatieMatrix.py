@@ -4,32 +4,67 @@ from EnigmaMachine import EnigmaMachine
 
 
 class PermutationNode:
+    """
+    Node, on the permutation matrix
+    """
     def __init__(self):
+        """
+        initialize a node
+        """
         self.propagations = []
+
+        """
+        indicate if the node is triggered
+        """
         self.assign = False
 
     def add_propagate(self, node: "PermutationNode"):
+        """
+        add another node to the propagation list
+        """
         self.propagations.append(node)
 
     def clear(self):
+        """
+        clear the assignment
+        """
         self.assign = False
 
     def trigger(self):
+        """
+        trigger the assignment
+        """
+
+        """
+        skip if assigned
+        """
         if self.assign:
             return
 
         self.assign = True
 
+        """
+        assign all connected propagation
+        """
         for p in self.propagations:
             p.trigger()
 
     def is_assigned(self):
+        """
+        check if the node is assigned
+        """
         return self.assign
 
 
 class PermutatieMatrix:
-
+    """
+    Advanced Turing Bombe Permutation Matrix
+    """
     _char_range = [65, 91]
+
+    """
+    set default Engima settings
+    """
     _rotors = ["AJDKSIRUXBLHWTMCQGZNPYFVOE",
                "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
                "BDFHJLCPRTXVZNYEIWGAKMUSQO",
@@ -44,15 +79,21 @@ class PermutatieMatrix:
         CRIB has an edge between 'A' and 'B' on index 0: provide ('A', 'B', 0)
         """
 
+        """
+        store the current configuration
+        """
         self.rotor_positions = rotor_positions
         self.rotor_rotations = rotor_rotations
 
         range_options = PermutatieMatrix._char_range[1]-PermutatieMatrix._char_range[0]
 
+        """
+        set up the matrix
+        """
         self.matrix = [[PermutationNode() for j in range(range_options)] for i in range(range_options)]
 
         """
-        make diagonal connections
+        make all diagonal connections
         """
         for i in range(range_options):
             for j in range(range_options):
@@ -62,11 +103,15 @@ class PermutatieMatrix:
                 self.matrix[i][j].add_propagate(self.matrix[j][i])
 
         """
-        for each rotor make a connection
+        for each rotor make a connection between the node before and after going through the Enigma machine,
+        In the course referred to the connection between (L1, L3) - (L2, eps(k+l)(L3))
         """
         for r in rotor_links:
             a, b, index = r
 
+            """
+            take L1 and L2 from the CRIB
+            """
             L1 = ord(a) - PermutatieMatrix._char_range[0]
             L2 = ord(b) - PermutatieMatrix._char_range[0]
 
@@ -76,9 +121,15 @@ class PermutatieMatrix:
                                     self.rotor_rotations,
                                     self._plug_mapping)
 
+            """
+            change the rotor position to the position it would be for this char, given the original configuration
+            """
             for i in range(index):
                 machine.do_rotors_rotation()
 
+            """
+            For each L3, check what its result is after going though the Enigma machine
+            """
             for i in range(self._char_range[0], self._char_range[1]):
 
                 link = self.get_transformed_char(chr(i), machine)
@@ -89,6 +140,9 @@ class PermutatieMatrix:
                 m1 = self.matrix[L1][L3]
                 m2 = self.matrix[L2][L3_transformed]
 
+                """
+                add the connections
+                """
                 m1.add_propagate(m2)
                 m2.add_propagate(m1)
 
@@ -99,6 +153,9 @@ class PermutatieMatrix:
         :return: corresponing character
         """
 
+        """
+        execute the enigma machine
+        """
         char_link = machine.encrypt(char, True)
 
         return char_link
@@ -178,7 +235,7 @@ class PermutatieMatrix:
                 print('T' if column.is_assigned() else 'F', end='|')
             print()
 
-    def get_permutations(self):
+    def get_permutations(self) -> tuple[str, str]:
         """
         Get the plug mapping of the enigma machine used
         """
@@ -199,6 +256,9 @@ class PermutatieMatrix:
 
 
 if __name__ == "__main__":
+    """
+    below is a test, to verify the PermutatieMatrix
+    """
     start = datetime.datetime.now()
 
     """
