@@ -37,31 +37,31 @@ VOORBIJ RAZEN GELUK IS OP DEN DUUR EEN KWESTIE VAN BEKWAAMHEID IK WEET DAT ZE DA
 
 Van het boek 'Problemski Hotel' van 'Dimitri Verhulst'
 
-## oplossing-methode
-Eerst heb ik de enkel kolomtranspositie achterhaalt.
-Vervolgens [Simon Singh cracking the vigenere cipher](https://www.simonsingh.net/The_Black_Chamber/vigenere_cracking_tool.html)
-gebruikt om de laatste sleutel (VERHULST) en text te achterhalen.
+## Oplossingsmethode
+Eerst heb ik de enkel-kolomtranspositie achterhaald.
+Vervolgens heb ik [Simon Singh cracking the vigenere cipher](https://www.simonsingh.net/The_Black_Chamber/vigenere_cracking_tool.html)
+gebruikt om de laatste sleutel (VERHULST) en de tekst te achterhalen.
 
-Tot slot, heb ik een gelijkwaardig systeem geimplementeerd, zodat het automatisch de tekst
-ontcijferd zonder Simon Singh zijn website niet meer nodig is.
+Tot slot, heb ik een gelijkwaardig systeem geïmplementeerd, zodat het automatisch de tekst
+ontcijfert zodat de website van Simon Singh niet meer nodig is.
 
 ### Enkel kolomtranspositie
-Een eigenschap van Vigenere is dat deze cipher veel herhaling heeft (vooral woord delen van lengte 3).
+Een eigenschap van Vigenere is dat deze cipher veel herhaling heeft (vooral woorddelen van lengte 3).
 Deze eigenschap word geëxploiteerd voor het oplossen van de enkel kolomtranspositie.
-Hierbij wordt elke enkel kolomtranspositie uitgevoerd. Vervolgens word er door middel van **Suffix Arrays** ([suffix array explanation](https://cp-algorithms.com/string/suffix-array.html))
-makkelijk gezocht naar common prefixes (CP) in de tekst. Als metric pakken we de enkel kolomtranspositie zijn CP. We nemen de decryption dat de hoogste CP hoeveelheid heeft van 
-lengte 3. Gelukkig voor ons kwam dit na de eerste poging uit op de ontcijfering van de enkel kolomtranspositie.
+Hierbij wordt elke enkel-kolomtranspositie uitgevoerd. Vervolgens word er door middel van **Suffix Arrays** ([suffix array explanation](https://cp-algorithms.com/string/suffix-array.html))
+makkelijk gezocht naar common prefixes (CP) in de tekst. Als metric pakken we de CP van de enkel-kolomtranspositie. We nemen de decryption dat de hoogste CP-hoeveelheid heeft van 
+lengte 3. Gelukkig voor ons kwam dit na de eerste poging uit op de ontcijfering van de enkel-kolomtranspositie.
 
 ### Vigenere Cipher
-De vigenere cijfer voert steeds een Ceaser Cipher uit, zodat voor iedere groep posities (met dezelfde mod key lengte), de meest voorkomende character is gelijkgesteld aan 'E'.
-We maken wel gebruik van het feit dat we de key lengte weten (kan via trial en error/ Simon Singh tool). Door steeds de meest frequente character te linken aan de character 'E', komen we snel tot het juste antwoord.
+De Vigenere cipher voert steeds een Caesar Cipher uit, zodat voor iedere groep posities (met dezelfde mod key lengte), het meest voorkomende karakter gelijkgesteld is aan 'E'.
+We maken wel gebruik van het feit dat we de key lengte weten (kan via trial and error/ Simon Singh tool). Door steeds het meest frequente karakter te linken aan het karakter 'E', komen we snel tot het juiste antwoord.
 
 ### Concrete functies
 
 - ``CommonPrefixCounter.py`` zorgt ervoor, dat gegeven een string, het makkelijk is te tellen hoe vaak dat een zekere 3-letter combinatie voorkomt.
-- ``TranspositionCipher.py`` voert de enkel kolomtranspositie encrypt en decrypt uit.
-- ``VigenereSolver.py`` kraak de vigenere zelf, door steeds Cesar ciphers uit te voeren, en steeds de meest frequente character gelijk te stellen aan 'E'
-- ``main.py`` hier is de functie ``find_highest_cp``, deze functie voert alle mogelijke enkel kolomtransposities uit, en behoudt de key, van de resulterende transpositie decryptie die de meeste common prefixes heeft. Deze file voert ook de hele decryptie uit
+- ``TranspositionCipher.py`` voert de enkel kolomtranspositie encryptie en decryptie uit.
+- ``VigenereSolver.py`` kraakt de vigenere zelf, door steeds Caesar ciphers uit te voeren, en steeds het meest frequente karakter gelijk te stellen aan 'E'
+- ``main.py`` hier is de functie ``find_highest_cp``, deze functie voert alle mogelijke enkel-kolomtransposities uit, en behoudt de key van de resulterende transpositie decryptie die de meeste common prefixes heeft. Deze file voert ook de hele decryptie uit.
 
 ### References
 - Course Material Code Theory from Professor S. Symens
