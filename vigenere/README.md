@@ -55,3 +55,10 @@ lengte 3. Gelukkig voor ons kwam dit na de eerste poging uit op de ontcijfering 
 ### Vigenere Cipher
 De vigenere cijfer voert steeds een Ceaser Cipher uit, zodat voor iedere groep posities (met deelfde mod key lengte), de meest voorkomende character is gelijkgesteld aan 'E'.
 We maken wel gebruik van het feit dat we de key lengte weten (kan via trial en error/ Simon Singh tool). Door steeds de meest frequente character te linken aan de chracter 'E', komen we snel tot het jusite antwoord.
+
+### Concrete functies
+
+- ``CommonPrefixCounter.py`` zorgt ervoor, dat gegeven een string, het makkelijk is te tellen hoe vaak dat een zekere 3-letter combinatie voorkomt.
+- ``TranspositionCipher.py`` voert de Enkelkolom transpositie encrypt en decrypt uit.
+- ``VigenereSolver.py`` kraak de vigenere zelf, door steeds Cesar ciphers uit te voeren, en steeds de meest frequente character gelijk te stellen aan 'E'
+- ``main.py`` hier is de functie ``find_highest_cp``, deze functie voert alle mogelijke Enkelkolom transposities uit, en behoudt de key, van de resulterende transpositie decryptie die de meeste common prefixes heeft. Deze file voert ook de hele decryptie uit
