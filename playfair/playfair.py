@@ -3,10 +3,12 @@
 #####################
 import random
 import re
+import string
 from abc import abstractmethod
 import math
 import text_splitter
 import string as letter_list
+import copy
 
 
 # Attempt #1: Bruteforce & manually check
@@ -25,7 +27,7 @@ class PlayFairBlock:
         return self
 
     def init_from_list(self, new_list: list):
-        self.grid = new_list
+        self.grid = copy.deepcopy(new_list)
 
     def init_from_string(self, s: str):
         self.grid = list(s)
@@ -77,8 +79,11 @@ class PlayFairBlock:
             raise("PREPROCESS!!!!!!!!!!!")
 
     def encrypt_string(self, string):
-        preprocessed = self.preprocess_string(string)
         bigrams = self.split_to_bigrams(string, False)
+        to_return = ""
+        for bi in bigrams:
+            to_return += self.encrypt_bigram(bi)
+        return to_return
 
     def split_to_bigrams(self, string, preprocess=True):
         to_return = string
@@ -105,7 +110,7 @@ class PlayFairBlock:
 class Solver:
     def __init__(self, string: str, block: PlayFairBlock):
         self.str = string.lower()
-        self.block = block
+        self.block = copy.deepcopy(block)
 
     @abstractmethod
     def solve(self):
@@ -126,7 +131,7 @@ class BruteForceSolver(Solver):
                 f.write(decrypted + "\n Key: " + str(self.block.grid) + "\n\n")
 
             numb += 1
-            if numb % 1000 == 0:
+            if numb % 10000 == 0:
                 print("Tried", numb, "times")
 
 
@@ -170,11 +175,11 @@ class SimulatedAnnealingSolver(Solver):
         self.forced_decryption = forced_decryption
 
     def solve(self):
-        current_key = self.block.grid.copy()
-        best_key = current_key
-        best_score, _ = self.eval_func(self.decrypt_with_key(current_key))
+        current_key = copy.deepcopy(self.block.grid)
+        best_key = copy.deepcopy(current_key)
+        best_score, _ = self.eval_func(self.decrypt_with_key(copy.deepcopy(current_key)))
         current_score = best_score
-        current_temp = self._start_temperature
+        current_temp = self._start_temperature + self._cooling_index
 
         while current_temp > 0:
             current_temp -= self._cooling_index
@@ -182,120 +187,65 @@ class SimulatedAnnealingSolver(Solver):
                 if current_temp == 0:
                     break
                 self._n += 1
-                if self._n % 1000 == 1:
+                if self._n % 10000 == 1:
                     print("Steps made:", self._n - 1)
-                neighbor_key = self.generate_neighbor(current_key)
-                self.block.init_from_list(neighbor_key)
-                decrypted_text = self.decrypt_with_key(neighbor_key)
+                neighbor_key = copy.deepcopy(self.generate_neighbor(copy.deepcopy(current_key)))
+                self.block.init_from_list(copy.deepcopy(neighbor_key))
+                decrypted_text = self.decrypt_with_key(copy.deepcopy(neighbor_key))
                 score, _ = self.eval_func(decrypted_text)
-                if score < current_score:
-                    current_key = neighbor_key
+                if score >= current_score:
+                    current_key = copy.deepcopy(neighbor_key)
                     current_score = score
-                    if score < best_score:
+                    if score > best_score:
                         best_score = score
-                        best_key = neighbor_key
-                elif math.exp((current_score - score)/current_temp) > random.uniform(0, 1):
-                    current_key = neighbor_key
-                    self._wasted += 1
-                    if self._wasted % 10000 == 0:
-                        print(f"Wasted {self._wasted} times."
-                              f" Step: {step} Temperature: {current_temp} "
-                              f"Randomness: {math.exp((current_score - score)/current_temp)}")
-
-                # if k % 1000 == 10000:
-                #     print(f"Generated {self._n} neighbours", "Best score:", best_score,
-                #           "Best key:", best_key, "Decrypted:\n", self.decrypt_with_key(best_key))
-
-        self.block.init_from_list(best_key)
-        print(self.decrypt_with_key(best_key))
-
-        return best_key, best_score
-    def daria_annealing(self):
-        current_key = self.block.grid.copy()
-        best_key = current_key
-        best_score, _ = self.eval_func(self.decrypt_with_key(current_key))
-        current_score = best_score
-        minimum_found = False
-
-        while not minimum_found:
-            neighbor_key = self.generate_neighbor(current_key)
-            self.block.init_from_list(neighbor_key)
-            decrypted_text = self.decrypt_with_key(neighbor_key)
-            score, _ = self.eval_func(decrypted_text)
-            if score < current_score:
-                self._wasted = 0
-                current_key = neighbor_key
-                current_score = score
-                if score < best_score:
-                    best_score = score
-                    best_key = neighbor_key
-            else:
-                self._wasted += 1
-                if self._wasted == 2000:
-                    print(f"Wasted {self._wasted} times. Switch to check minimum mode")
-                    l1 = list(range(25))
-                    random.shuffle(l1)
-                    l2 = list(range(25))
-                    random.shuffle(l2)
-                    for i in l1:
-                        if self._wasted == 0:
-                            break
-                        for j in l2:
-                            if i == j: continue
-                            neighbor_key = current_key
-                            neighbor_key[i], neighbor_key[j] = neighbor_key[j], neighbor_key[i]
-                            self.block.init_from_list(neighbor_key)
-                            decrypted_text = self.decrypt_with_key(neighbor_key)
-                            score, _ = self.eval_func(decrypted_text)
-                            if score < current_score:
-                                print("Not local minimum, go further")
-                                current_key = neighbor_key
-                                current_score = score
-                                self._wasted = 0
-                                if score < best_score:
-                                    best_score = score
-                                    best_key = neighbor_key
-                                break
-                    if self._wasted != 0:
-                        print(f"Found local minimum with score {best_score}")
-                        minimum_found = True
-
-        self.block.init_from_list(best_key)
+                        best_key = copy.deepcopy(neighbor_key)
+                else:
+                    lucky_chance = math.exp((score - current_score)/current_temp)
+                    r = random.uniform(0, 1)
+                    if lucky_chance > r:
+                        current_key = copy.deepcopy(neighbor_key)
+                        current_score = score
+                        self._wasted += 1
+                        if self._wasted % 10000 == 0:
+                            print(f"Wasted {self._wasted} times."
+                                  f" Step: {step} Temperature: {current_temp} "
+                                  f"Randomness: {math.exp((score - current_score)/current_temp)}")
+        self.block.init_from_list(copy.deepcopy(best_key))
         print(text_splitter.infer_spaces(self.decrypt_with_key(best_key), "en"))
 
         return best_key, best_score
 
     def generate_neighbor(self, key):
-        neighbor_key = key[:]
-        if random.random() < 0.8:
+        neighbor_key = copy.deepcopy(key)
+        if random.random() < 0.8: # Pareto principe
             # Swap two random elements
             i, j = random.sample(range(25), 2)
+            while i == j:
+                i, j = random.sample(range(25), 2)
             neighbor_key[i], neighbor_key[j] = neighbor_key[j], neighbor_key[i]
         else:
             check = random.random()
             # Rotate a random row or column
-            if check < 0.4:  # Rotate row
+            if check < 0.5:  # Rotate row
                 row = random.randint(0, 4)
                 start = row * 5
                 neighbor_key[start:start + 5] = neighbor_key[start + 1:start + 5] + neighbor_key[start:start + 1]
-            elif check < 0.8:  # Rotate column
+            else:  # Rotate column
                 col = random.randint(0, 4)
                 col_items = [key[col + 5 * i] for i in range(5)]
                 rotated = col_items[1:] + col_items[:1]
                 for i in range(5):
                     neighbor_key[col + 5 * i] = rotated[i]
-            else: # Complete random
-                neighbor_key = list(letter_list.ascii_lowercase)
-                neighbor_key.remove("j")
-                random.shuffle(neighbor_key)
 
         self._n += 1
         return neighbor_key
 
     def decrypt_with_key(self, key):
+        old_key = copy.deepcopy(self.block.grid)
         self.block.init_from_list(key)
         bigrams = self.block.split_to_bigrams(self.str, False)
         decrypted = "".join(self.block.decrypt_bigram(bigram) for bigram in bigrams)
+        self.block.init_from_list(old_key)
         return decrypted
 
     def setForcedDecryption(self, forced_decryption: dict):
@@ -313,66 +263,40 @@ class SimulatedAnnealingSolver(Solver):
                 return False
         return True
 
-# Attempt 4: Frequency heuristic / Index of coincidence: see above, ignore second
-
-# Attempt 5: Play not fair
-
 import time
 if __name__ == "__main__":
-    # block = PlayFairBlock()
-    # block.init_from_string("palmerstonbcdfghikquvwxyz")
-    # block.show()
-    # to_encrypt = ["wi", "sk", "un", "de", "is", "le", "uk"]
-    # result = ""
-    # for i in to_encrypt:
-    #     result += block.encrypt_bigram(i)
-    # print("Result:", result)
-    # string = "Maar aardrijkskunde bwe"
-    # print(string)
-    # bigrams = block.split_to_bigrams(string)
-    # print("Bigrams:", bigrams)
-    #
-    # the_string = "MUHULOSFOLPVMTRUGNODKNKEUGTRFDENSVDVTPSZSLYIUFNANBNSBFKDDVENAORSSKTLUTGOVPGDSUFDFPSZSLPVRXCWSPSAAMIBVTFSPVMVDAUYDKLMEUUFASSRUFOGVBOMMDTUNFFZVTUOTLUFSKUTUIVTASSRAGRUZLOUTLBRGRYVLOSFOLPVDMLOVXLUSAKZKOUFASSRUFNFFOKDRBGNSEKVAFXAUCTATEODFALMHMTSUFVXYVRZNUSYFNOTSULZTEQIVSKERGOUVSBNUIUFSKAXNSZFNDSVVCBRSAADMTRUMVUFNDVENAURSVOTBFLZTEQIVSUFTFMTSLNAEUCMGSUFGRUTBNAVBCMVNYLODGUFTFPVKEOULMNADAVQNDSVNFMLXVAUSLSEAXBRXVGALRGNCWKCXVNDKCFDENRGPSLURODAEQNUKZFNSOMVMSHNYREYASFDRFKDTWRUUFNGLODGMVTPDALHTSRODAVQVKDAFDENDVLMFNTVVDBUFDRBOGTSNGLODGUFDATAVSOTVLDALERZLUPRTOXAAVUFVXYVRZNUSYFNOUSZSLGNMVUTKDUCLZASLMWRAGRUYVYVOLSAVMUMCMRWEMMVDAWIDKTRKSBWRULOBILMVHMLUFSKDAVUDAVPDBDAVQETCTSENDAVFDQZQBYTSPUTGOVPGDTCTRAVGNDAEUVBAUFDRBCBPVAONVUTMRMVCYRKHOPTAVGACTGVAVRGZROHUYDEASTSASRSAOLMWRVXBRFUKDVWNUPCTSUFGRSVETLOWCASRSANAULMWRVXBRKQKDSUKDVWNUVICWNVRNVSGNDAEYDENGNAVXKFTUKDOURZNDTIRUYCTFNVUFTONAVXKFTUKDRGKAFOUTRZVTBGAOKDBNAVWITRHNOLOBRNNGBDOITEAVKNXKCTSENKIQKDEOTQXACVETGAMVXKVSENAUKDVWNUPVCZDBOSDABEGAKZFNAVYCDVUTLRGNDHWILFIGPVUKTAWBVSQCNAWITRHNNDRPKDANENCWKCTOASTULUSYFUCYOGNDAOYCDVUTBNGSGNNFOTBFKDYGUOTLLTUNTUKDTWNSZFDKDVUFSTZVVPDBQCNABVKGNVXAOIGRRGLOUTOGSLASKDVWNUXRVBVATOKDUFTRYKSPUFTFOGSLMVIXETDVWCUBFDYGFTAVUTHNGNUFTFGBROOATUOGSLDKVSRGOUVSBGKERXTFOTADZRBNVZLUFDVANEVSBNSWCWNVDAVQLUFDVARLCYHNSVOLHCVSRZVLNBASLMWRVXBRKQKDSOKDUFTRYKSPUFTFUKVKTRHNKCDAXSGNDANYEFNGNDGASPSATWVSOTAMGDUHFVRBEMGNDAAUNDKCMVMBASTOXAKZKOKDZRSCNVVWUFGNLTTVDLTRSRAOMCUFVXYVRZBNVNKDSOUTZBGRRXTFOTVLLZZFVBANVDMTRUNEVSBUCYEMYVYVNUAOQTUBTRTCSEASTQUFVSDKRHLFAGVSUIRGUOUSVBYKRBDMTRCIFDWCQCIHDAUBTRGBWTRNASKDPVGQMUTDFRNUAOGAOTVYOSSKXAFRHTFOTULUKSQCTNSVUSIGEMUTLRSWSVFRMUSQ"
-    # the_string = the_string.lower()
-    # bigrams = block.split_to_bigrams(the_string, False)
-    # numb = 0
-    # # Brute force
-    # brute = BruteForceSolver(the_string, block)
-    # brute.solve()
 
     block = PlayFairBlock()
-    block.rand_initialize()
+    block.init_from_string("abcdefghiklmnopqrstuvwxyz")
     cipher = "MUHULOSFOLPVMTRUGNODKNKEUGTRFDENSVDVTPSZSLYIUFNANBNSBFKDDVENAORSSKTLUTGOVPGDSUFDFPSZSLPVRXCWSPSAAMIBVTFSPVMVDAUYDKLMEUUFASSRUFOGVBOMMDTUNFFZVTUOTLUFSKUTUIVTASSRAGRUZLOUTLBRGRYVLOSFOLPVDMLOVXLUSAKZKOUFASSRUFNFFOKDRBGNSEKVAFXAUCTATEODFALMHMTSUFVXYVRZNUSYFNOTSULZTEQIVSKERGOUVSBNUIUFSKAXNSZFNDSVVCBRSAADMTRUMVUFNDVENAURSVOTBFLZTEQIVSUFTFMTSLNAEUCMGSUFGRUTBNAVBCMVNYLODGUFTFPVKEOULMNADAVQNDSVNFMLXVAUSLSEAXBRXVGALRGNCWKCXVNDKCFDENRGPSLURODAEQNUKZFNSOMVMSHNYREYASFDRFKDTWRUUFNGLODGMVTPDALHTSRODAVQVKDAFDENDVLMFNTVVDBUFDRBOGTSNGLODGUFDATAVSOTVLDALERZLUPRTOXAAVUFVXYVRZNUSYFNOUSZSLGNMVUTKDUCLZASLMWRAGRUYVYVOLSAVMUMCMRWEMMVDAWIDKTRKSBWRULOBILMVHMLUFSKDAVUDAVPDBDAVQETCTSENDAVFDQZQBYTSPUTGOVPGDTCTRAVGNDAEUVBAUFDRBCBPVAONVUTMRMVCYRKHOPTAVGACTGVAVRGZROHUYDEASTSASRSAOLMWRVXBRFUKDVWNUPCTSUFGRSVETLOWCASRSANAULMWRVXBRKQKDSUKDVWNUVICWNVRNVSGNDAEYDENGNAVXKFTUKDOURZNDTIRUYCTFNVUFTONAVXKFTUKDRGKAFOUTRZVTBGAOKDBNAVWITRHNOLOBRNNGBDOITEAVKNXKCTSENKIQKDEOTQXACVETGAMVXKVSENAUKDVWNUPVCZDBOSDABEGAKZFNAVYCDVUTLRGNDHWILFIGPVUKTAWBVSQCNAWITRHNNDRPKDANENCWKCTOASTULUSYFUCYOGNDAOYCDVUTBNGSGNNFOTBFKDYGUOTLLTUNTUKDTWNSZFDKDVUFSTZVVPDBQCNABVKGNVXAOIGRRGLOUTOGSLASKDVWNUXRVBVATOKDUFTRYKSPUFTFOGSLMVIXETDVWCUBFDYGFTAVUTHNGNUFTFGBROOATUOGSLDKVSRGOUVSBGKERXTFOTADZRBNVZLUFDVANEVSBNSWCWNVDAVQLUFDVARLCYHNSVOLHCVSRZVLNBASLMWRVXBRKQKDSOKDUFTRYKSPUFTFUKVKTRHNKCDAXSGNDANYEFNGNDGASPSATWVSOTAMGDUHFVRBEMGNDAAUNDKCMVMBASTOXAKZKOKDZRSCNVVWUFGNLTTVDLTRSRAOMCUFVXYVRZBNVNKDSOUTZBGRRXTFOTVLLZZFVBANVDMTRUNEVSBUCYEMYVYVNUAOQTUBTRTCSEASTQUFVSDKRHLFAGVSUIRGUOUSVBYKRBDMTRCIFDWCQCIHDAUBTRGBWTRNASKDPVGQMUTDFRNUAOGAOTVYOSSKXAFRHTFOTULUKSQCTNSVUSIGEMUTLRSWSVFRMUSQ".lower()
+    eval_func = text_splitter.twonorm_frequency_distance_with_quadrams
 
-    eval_func = text_splitter.twonorm_frequency_distance
-    #eval_func = text_splitter.twonorm_frequency_distance_with_quadrams
-
-    # solver = SimulatedAnnealingSolver(string, block, eval_func, 1000)
-    # print(solver.decrypt_with_key(['l', 's', 't', 'u', 'o', 'w', 'p', 'z', 'c', 'n', 'm', 'y', 'f', 'h', 'k', 'i', 'b', 'g', 'x', 'q', 'v', 'a', 'r', 'd', 'e']))
-
-    if eval_func.__name__ == "twonorm_frequency_distance":
-        thresh = math.inf # Check what is a good result for the log approach?
-        the_bestest = thresh
+    if eval_func.__name__ in ["twonorm_frequency_distance", "twonorm_frequency_distance_with_quadrams"]:
+        thresh = -math.inf # Check what is a good result for the log approach?
+        the_bestest_score = thresh
     else:
         thresh = 0.01
-        the_bestest = thresh
+        the_bestest_score = thresh
+    the_bestest_key = copy.deepcopy(block.grid)
+    it = 0
     while True:
+        block.init_from_list(the_bestest_key)
+        if it % 3 == 0 and it != 0:
+            # Update the block
+            block.init_from_string("abcdefghiklmnopqrstuvwxyz")
+        print("Current key:", block.grid)
         solver = SimulatedAnnealingSolver(cipher, block, eval_func, 500)
-        solver.block.rand_initialize()
-        #solver.setForcedDecryption({"uf": "th", "kd": "he", "da": "in"})
-        # print(solver.checkForcedRules())
-        best, best_score = solver.solve()
-        if best_score < the_bestest or best_score < thresh:
-            the_bestest = best_score
-            print("\033[92mNew best score:\033[00m", the_bestest)
+        best_key, best_score = solver.solve()
+        if best_score > the_bestest_score or best_score > thresh:
+            the_bestest_score = best_score
+            the_bestest_key = copy.deepcopy(best_key)
+            print("\033[92mNew best score:\033[00m", the_bestest_score)
             with open("decrypted.txt", "a") as f:
                 f.write(str(time.time()) + "\n" +
-                        "New best score: " + str(the_bestest) + "\n" +
-                        "Best key found: " + str(best) + "\n" +
-                        "Splitted text: " + text_splitter.infer_spaces(solver.decrypt_with_key(best), "en") + "\n\n")
-
-        # Update the block
-        block = PlayFairBlock().rand_initialize()
+                        "New best score: " + str(the_bestest_score) + "\n" +
+                        "Best key found: " + str(best_key) + "\n" +
+                        "Splitted text: " + text_splitter.infer_spaces(solver.decrypt_with_key(best_key), "en") + "\n\n")
+        it += 1
     """
     uf => th
     kd => he

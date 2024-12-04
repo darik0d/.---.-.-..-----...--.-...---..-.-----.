@@ -5,6 +5,7 @@
 import math
 import re
 import os
+import string
 from math import log
 
 # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
@@ -112,7 +113,7 @@ for bigram in bigrams:
 for bigram in bigrams_to_check:
     bigrams_to_check[bigram] += 1
     bigrams_to_check[bigram] /= (len(bigrams) + 1) # Smoothing!
-    bigrams_to_check[bigram] = math.log(bigrams_to_check[bigram])
+    bigrams_to_check[bigram] = math.log10(bigrams_to_check[bigram])
 # Sort
 bigrams_to_check = dict(sorted(bigrams_to_check.items(), key=lambda item: item[1], reverse=True))
 
@@ -134,34 +135,91 @@ def twonorm_frequency_distance(string: str):
             bigram_frequency[bigram] = 1
     bigram_frequency = dict(sorted(bigram_frequency.items(), key=lambda item: item[1], reverse=True))
     for bigram in bigram_frequency:
-        # bigram_frequency[bigram] += 1
-        bigram_frequency[bigram] /= len(bigrams)
-        bigram_frequency[bigram] = math.log(bigram_frequency[bigram])
-    for bigram in bigrams_to_check:
-        if bigram in bigram_frequency:
-            distance += (bigrams_to_check[bigram] - bigram_frequency[bigram]) ** 2
-    distance = math.sqrt(distance)
+        if bigram in bigrams_to_check: # Normally should be ok
+            # distance += (bigrams_to_check[bigram] - bigram_frequency[bigram]) ** 2
+            distance += bigrams_to_check[bigram]*bigram_frequency[bigram]
+    distance /= len(bigrams)
     return distance, "en" # Currently so
 
-# Quadrams
+# # Quadrams
+#
+# # Top english bigrams
+# quadrams_to_check = dict()
+# text = open("corpus/preprocessed/en/eng-uk_web_2002_1M-sentences.txt").read()
+# quadrams = re.findall(r"[a-z]{4}", text)
+# quadrams.extend(re.findall(r"[a-z]{4}", text[1:]))
+# quadrams.extend(re.findall(r"[a-z]{4}", text[2:]))
+# quadrams.extend(re.findall(r"[a-z]{4}", text[3:]))
+# added = 0
+# for quadram in quadrams:
+#     if quadram in quadrams_to_check:
+#         quadrams_to_check[quadram] += 1
+#     else:
+#         quadrams_to_check[quadram] = 1
+# alph = list(string.ascii_lowercase)
+# alph.remove("j")
+# for l1 in alph.copy():
+#     for l2 in alph.copy():
+#         for l3 in alph.copy():
+#             for l4 in alph.copy():
+#                 if l1 + l2 + l3 + l4 not in quadrams_to_check:
+#                     quadrams_to_check[l1 + l2 + l3 + l4] = 1
+#                     added += 0.01
+# #quadrams_length = len(quadrams) + added
+# quadrams_length = len(quadrams)
+# for quadram in quadrams_to_check:
+#     quadrams_to_check[quadram] /= quadrams_length
+#     quadrams_to_check[quadram] = math.log10(quadrams_to_check[quadram])
+# # Sort
+# quadrams_to_check = dict(sorted(quadrams_to_check.items(), key=lambda item: item[1], reverse=True))
+#
+# def twonorm_frequency_distance_with_quadrams(string: str):
+#     """
+#     Calculate the two norm distance between the quadram frequencies of the string and the quadrams_to_check.
+#
+#     :param string: The string to calculate the quadram frequencies.
+#     :param quadrams_to_check: The quadram frequencies to compare with.
+#     """
+#     distance = 0
+#     quadramss = re.findall(r"[a-z]{4}", string)
+#     quadramss.extend(re.findall(r"[a-z]{4}", string[1:]))
+#     quadramss.extend(re.findall(r"[a-z]{4}", string[2:]))
+#     quadramss.extend(re.findall(r"[a-z]{4}", string[3:]))
+#     # quadram_frequency = {}
+#     # for quadram in quadramss:
+#     #     if quadram in quadram_frequency:
+#     #         quadram_frequency[quadram] += 1
+#     #     else:
+#     #         quadram_frequency[quadram] = 1
+#     # quadram_frequency = dict(sorted(quadram_frequency.items(), key=lambda item: item[1], reverse=True))
+#     # for quadram in quadram_frequency:
+#     #     if quadram in quadrams_to_check:
+#     #         distance += quadrams_to_check[quadram]*quadram_frequency[quadram]
+#     #     else:
+#     #         NOT_FOUND_FREQUENCY = math.log10((1.0 / quadrams_length))
+#     #         distance += NOT_FOUND_FREQUENCY * quadram_frequency[quadram]
+#     for quadram in quadramss:
+#         distance += quadrams_to_check[quadram]
+#
+#     # distance /= len(quadramss)
+#     return distance, "en" # Currently so
 
-# Top english bigrams
-quadrams_to_check = dict()
-text = open("corpus/preprocessed/en/eng_news_2005_100K-sentences.txt").read()
-quadrams = re.findall(r"[a-z]{4}", text)
-quadrams.extend(re.findall(r"[a-z]{4}", text[1:]))
-quadrams.extend(re.findall(r"[a-z]{4}", text[2:]))
-quadrams.extend(re.findall(r"[a-z]{4}", text[3:]))
-for quadram in quadrams:
-    if quadram in quadrams_to_check:
-        quadrams_to_check[quadram] += 1
-    else:
-        quadrams_to_check[quadram] = 1
-for quadram in quadrams_to_check:
-    quadrams_to_check[quadram] /= len(quadrams)
-    quadrams_to_check[quadram] = math.log(quadrams_to_check[quadram])
-# Sort
-quadrams_to_check = dict(sorted(quadrams_to_check.items(), key=lambda item: item[1], reverse=True))
+strange_quadgrams = {}
+strange_list = []
+q_file = open("./stats/en/quadrams.txt")
+for line in q_file:
+    line = line[:-1] # remove \n
+    if line[0] != "-": continue
+    if line[-1] == ",": line = line[:-1]
+    strange_list.append(float(line))
+alph = list(string.ascii_lowercase)
+i = 0
+for l1 in alph.copy():
+    for l2 in alph.copy():
+        for l3 in alph.copy():
+            for l4 in alph.copy():
+                strange_quadgrams[l1 + l2 + l3 + l4] = strange_list[i]
+                i += 1
 
 def twonorm_frequency_distance_with_quadrams(string: str):
     """
@@ -171,25 +229,11 @@ def twonorm_frequency_distance_with_quadrams(string: str):
     :param quadrams_to_check: The quadram frequencies to compare with.
     """
     distance = 0
-    quadrams = re.findall(r"[a-z]{4}", string)
-    quadrams.extend(re.findall(r"[a-z]{4}", string[1:]))
-    quadrams.extend(re.findall(r"[a-z]{4}", string[2:]))
-    quadrams.extend(re.findall(r"[a-z]{4}", string[3:]))
-    quadram_frequency = {}
-    for quadram in quadrams:
-        if quadram in quadram_frequency:
-            quadram_frequency[quadram] += 1
-        else:
-            quadram_frequency[quadram] = 1
-    quadram_frequency = dict(sorted(quadram_frequency.items(), key=lambda item: item[1], reverse=True))
-    for quadram in quadram_frequency:
-        quadram_frequency[quadram] /= len(quadrams)
-        quadram_frequency[quadram] = math.log(quadram_frequency[quadram])
-    for quadram in quadrams_to_check:
-        if quadram in quadram_frequency:
-            distance += (quadrams_to_check[quadram] - quadram_frequency[quadram]) ** 2
-    distance = math.sqrt(distance)
-    return distance, "en" # Currently so
+    for i in range(len(string)-4):
+        q = string[i:i+4]
+        score = strange_quadgrams[q]
+        distance += score
+    return distance, "en"
 
 if __name__ == "__main__":
     s = "De naam en inspiratie komen van een Engelse termannealinguitgloeien binnen de metaalbewerking. Het betreft een techniek waarbij metaal verhit wordt en daarna gecontroleerd afgekoeld om de grootte van de kristallen binnen het materiaal te vergroten en daarmee het aantal defecten te verkleinen. "
