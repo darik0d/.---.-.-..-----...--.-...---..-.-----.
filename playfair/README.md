@@ -124,75 +124,95 @@ Laten we eerst beginnen met de root folder. Naast deze ``README.md`` file kan je
 - ``decrypted.txt``: output van de vorige runs van de Playfair solver
 - ``graphic_generator.py``: script dat ik heb gebruikt om de grafieken voor de bigramverdelingen te genereren
 - ``playfair.py``: Playfair solvers (run die om de code te cracken!)
-- ``text_splitter``: bevat een handig scriptje om een string in woorden te splitsen en dus wat spaties toe te voegen 
+- ``text_splitter``: bevat een handig scriptje om een string in woorden te splitsen en dus om de decryptie meer leesbaar te maken
 
 ## Bepalen van de taal
 
-Voor de opgave hebben we als een hint gekregen dat het originele bericht in het Nederlands, Frans, Duits, Engels, Italiaans of Spaans geschreven is.
-Om te bepalen met welke van deze talen ik verder moet werken, heb ik frequentieanalyse toegepast.
+Voor de opgave hebben we als hint gekregen dat het originele bericht in het Nederlands, Frans, Duits, Engels, Italiaans of Spaans geschreven is.
+Om te bepalen met welke van deze talen ik verder moet werken, heb ik een frequentieanalyse toegepast.
 
 ### Frequentieanalyse
 
-Aangezien dat Playfair een bericht bigram per bigram encrypt, vond ik logisch om een frequentietabel op te stellen voor elke van de gegeven talen en vergelijken of het min om meer hetzelfde patroon volgt als de gegeven ciphertext.
+Aangezien dat Playfair een bericht bigram per bigram encrypt, vond ik het logisch om een frequentietabel op te stellen voor elke van de gegeven talen en te vergelijken of het min om meer hetzelfde patroon volgt als de gegeven ciphertext.
 Hiervoor heb ik een dataset van 100000 zinnen van elke taal gepakt van https://wortschatz.uni-leipzig.de/en/download. In ``corpus/original`` folder kan je die datasets vinden. 
 Daarna heb ik met ``corpus/corpus_preprocessing.py`` alle bestanden verwerkt zodat ze alleen lowercase letters bevatten (daarnaast heb ik j met i vervangen en en ook de letters met diakritische tekens met overeenstemmende letters van het Latijnse alfabet).
 Het resultaat kan je in de ``corpus/preprocessed`` folder vinden.
 
-Tot slot, heb ik grafieken van bigram frequentie gegenereerd met ``graphic_generator.py``. Voor de ciphertext zelf was de volgende afbeelding de output:
+Tot slot, heb ik grafieken van de bigramfrequenties gegenereerd met ``graphic_generator.py``. Voor de ciphertext zelf was de volgende afbeelding de output:
 
-![Bigram verdeling voor ciphertext](./bigram_test.png)
+<img src="./bigram_test.png" alt="Bigram verdeling voor ciphertext" width="700"/>
 
 Mijn conclusie was dat de meest waarschijnlijke taal het Engels is. 
-Hier is de grafiek hiervan (voor andere talen kan je in de ``stats`` folder vinden):
+Hier is de grafiek hiervan (voor de andere talen kan je grafieken in de ``stats`` folder vinden):
 
-![Bigram verdeling Engels](./stats/en/bigram_frequency_en_part_1.png)
+<img src="./stats/en/bigram_frequency_en_part_1.png" alt="Bigram verdeling Engels" width="700"/>
 
 ## Simulated annealing
 
 Simulated annealing is een optimalisatiealgoritme dat kan gebruikt worden om een globale extremum te vinden (in ons geval het globale maximum, maar daarover verder). 
-Om gevallen te voorkomen waarbij het model in een lokaal extremum blijft hangen (wat zou in het geval van een hill climbing kunnen gebeuren), wordt er een concept van *temperatuur* geintroduceerd.
+Om gevallen te voorkomen waarbij het model in een lokaal extremum blijft hangen (wat zou in het geval van een hill climbing kunnen gebeuren), wordt er een concept van *temperatuur* geïntroduceerd.
 Hoe hoger de temperatuur, hoe groter de kans dat een key met een slechtere score geaccepteerd wordt.
-In de loop van het werken van de simulated annealing algoritme daalt de temperatuur geleidelijk, wat tot een *greedier* search leidt. 
+In de loop van de simulated annealing algoritme daalt de temperatuur geleidelijk, wat tot een *greedier* search zorgt. 
 
-Samengevat, hier is een overzicht van hoe het algoritme werkt:
+Samengevat, hier is een overzicht van hoe het algoritme in algemeen werkt:
 
-1. Begin met key *k*, * 
+1. Begin met een start key *k* en temperatuur *t*.
+2. Bij elke stap wordt *t* afgekoeld volgens temperatuurrooster r.
+3. Bij elke stap bereken een neighbour van de huidige sleutel
+4. Bereken de score van de nieuwe sleutel
+   5. Als de score hoger is dan de huidige score, wordt de buursleutel de huidige sleutel. 
+   6. Als het niet het geval is, kan de nieuwe sleutel toch geaccepteerd worden als huidige sleutel met de kans e<sup>(huidige score - nieuwe score)/(temperatuur)</sup>
+7. Herhaal 2-6 tot *t* 0 wordt.
+8. Return de beste sleutel met de beste score.
 
-Een van de grootste struikelpunten voor mij was om een goed heuristic en parameters te vinden.
+Een van de grootste struikelpunten voor mij was om een goede heuristiek en parameters te vinden.
 Helaas, van wat ik heb gelezen, zijn er geen vaste regels hoe je dat moet doen, waardoor mijn zoektocht naar de juiste oplossing een beetje langer was dan ik had verwacht.
+
+Hier is een korte overzicht van de parameters:
 
 #### Start key
 
-Op zich speelt het geen grote rol, maar in het geval van deze ciphertext geeft het gemiddeld betere resultaten als je met de string ```abcdefghiklmnopqrstuvxyz``` dan een willekeurige sleutel. 
-Maar opnieuw, door het aard van het algoritme, werkt het in beide gevallen.
+Op zich speelt het geen grote rol, maar in het geval van deze ciphertext geeft het gemiddeld betere resultaten als je met de string ```abcdefghiklmnopqrstuvxyz``` begint dan met een willekeurige sleutel. 
+Maar opnieuw, door de aard van het algoritme, werkt het in beide gevallen.
 
 #### Begintemperatuur
 
-...
+Hangt sterk van de evaluatiefunctie en de afkoelingsstrategie af. Ik heb gekozen om die niet te hoog te zetten, omdat anders zou het aantal van totale stappen onnodig hoog liggen. In de huidige implementie is gelijk aan 50.
+
+#### Afkoelingsstrategie
+
+Er bestaan verschillende afkoelingsstrategieën [(paper)](https://iopscience.iop.org/article/10.1088/0305-4470/31/41/011), maar de simpelste daarvan, namelijk de lineaire daling, geeft vaak ook de beste resultaten. 
+Dus in dit project heb ik gekozen om niet het wiel opnieuw te ontdekken en gewoon deze strategie gepakt. 
 
 #### Aantal stappen
 
-...
+Bepaalt hoeveel iteraties met dezelfde temperatuur wordt er uitgevoerd. 
+Wordt experimenteel bepaald. Voor de huidige implementatie heb ik dit getal aan 500 gelijk gesteld. 
 
 #### Aantal iteraties
 
-...
-
-#### Begintemperatuur
-
-...
-
-#### Temperatuurrooster
-
-...
+Bepaalt hoeveel keer je de simulated annealing reset voor je opnieuw vanaf nul begint. Is gelijk aan 3 in de huidige implementatie (ook experimenteel bepaald).
 
 #### Neighbour generation function
 
-...
+In het begin dacht ik om alleen swaps van letters te beschouwen (elke neighbour ligt dus op Hamming afstand 2).
+Als een andere mogelijkheid beschouwde ik om een kans toe te voegen dat er twee kolommen of rijen worden geswapped, maar ik heb gemerkt dat het
+soms zelfs tot slechtere resultaten kan leiden, dus in mijn eindimplementatie heb ik gekozen om die weg te halen.
 
 #### Evaluatiefunctie
 
-...
+Waarschijnlijk de belangrijkste parameter. In de loop van het project heb ik verschillende manieren uitgeprobeerd:
+
+- Tweenorm afstand berekenen tussen frequentie van bigrams van de ontcijferde tekst en de zelfopgestelde frequentie lijst (te minimaliseren)
+- Som van alle frequenties van de woorden die in het ontcijferde bericht voorkomen (te maximaliseren)
+- Som van frequenties van de bigrams die in de ontcijferde tekst voorkomen
+- ...
+- Som van de frequenties van de quadgrams van de ontcijferde tekst
+
+Voor mijn eindimplementatie heb ik het laatste gekozen (omdat het best werkte). 
+Voor de quadgrams frequenties heb ik een lijst van hier gepakt: http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/
+en naar log probabilities omgezet. Ik heb het ook eerst uitgeprobeerd met zelfafgeleide frequentie lijst (met Laplacian smoothing, want sommige combinaties kwamen niet voor in de dataset), maar het gaf niet goede resultaten
+(ik vermoed dat er waarscrijnlijk een grotere corpus nodig was).
 
 #### Oplossing
 
@@ -202,7 +222,7 @@ Bij een van de runs heb ik het volgende resultaat gekregen:
 1733165260.5431437
 New best score: -7039.003283658883
 Best key found: ['u', 'r', 's', 'o', 't', 'h', 'c', 'k', 'l', 'f', 'y', 'i', 'g', 'm', 'b', 'q', 'w', 'x', 'z', 'p', 'd', 'v', 'e', 'n', 'a']
-Splitted text: you dont know about meu nl esx s you have read a box ok by the name of the adventures of tom sawyer 
+Split text: you dont know about meu nl esx s you have read a box ok by the name of the adventures of tom sawyer 
 that box ok was writ x ten by mark twain and he holds the truths mainly not all parts of the story are true 
 but most of it is i dont know anyone who tel xl s the truth all the time except perhaps aunt polly or the widow 
 douglas or tom sawyers x sister mary these people are written about in the adventures of tom sawyer that book 
@@ -227,6 +247,6 @@ Ziet er goed uit! Dit fragment komt uit ``The Adventures of Huckleberry Finn`` g
 
 ### Extra
 
-Om de juiste decryptie gemakkelijker te kunnen herkennen, heb ik eens scriptje gemaakt dat gebaseerd is op Ziph's law en dat in een string met een gegeven taal spaties toevoegt.
-Zoals je boven kan zien, werkt het best ok.
+Om de juiste decryptie gemakkelijker te kunnen herkennen, heb ik een scriptje gemaakt dat gebaseerd is op Zipf's law en dat een string (met de taal gegeven) spaties toevoegt.
+Zoals je boven kan zien, werkt het best ok (buiten het feit dat het "complainedabout" als één woord beschouwt).
 

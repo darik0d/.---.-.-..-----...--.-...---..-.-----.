@@ -179,7 +179,7 @@ class SimulatedAnnealingSolver(Solver):
         best_key = copy.deepcopy(current_key)
         best_score, _ = self.eval_func(self.decrypt_with_key(copy.deepcopy(current_key)))
         current_score = best_score
-        current_temp = self._start_temperature + self._cooling_index
+        current_temp = self._start_temperature
 
         while current_temp > 0:
             current_temp -= self._cooling_index
@@ -217,25 +217,11 @@ class SimulatedAnnealingSolver(Solver):
 
     def generate_neighbor(self, key):
         neighbor_key = copy.deepcopy(key)
-        if random.random() < 0.8: # Pareto principe
-            # Swap two random elements
+        # Swap two random elements
+        i, j = random.sample(range(25), 2)
+        while i == j:
             i, j = random.sample(range(25), 2)
-            while i == j:
-                i, j = random.sample(range(25), 2)
-            neighbor_key[i], neighbor_key[j] = neighbor_key[j], neighbor_key[i]
-        else:
-            check = random.random()
-            # Rotate a random row or column
-            if check < 0.5:  # Rotate row
-                row = random.randint(0, 4)
-                start = row * 5
-                neighbor_key[start:start + 5] = neighbor_key[start + 1:start + 5] + neighbor_key[start:start + 1]
-            else:  # Rotate column
-                col = random.randint(0, 4)
-                col_items = [key[col + 5 * i] for i in range(5)]
-                rotated = col_items[1:] + col_items[:1]
-                for i in range(5):
-                    neighbor_key[col + 5 * i] = rotated[i]
+        neighbor_key[i], neighbor_key[j] = neighbor_key[j], neighbor_key[i]
 
         self._n += 1
         return neighbor_key
@@ -271,14 +257,10 @@ if __name__ == "__main__":
     cipher = "MUHULOSFOLPVMTRUGNODKNKEUGTRFDENSVDVTPSZSLYIUFNANBNSBFKDDVENAORSSKTLUTGOVPGDSUFDFPSZSLPVRXCWSPSAAMIBVTFSPVMVDAUYDKLMEUUFASSRUFOGVBOMMDTUNFFZVTUOTLUFSKUTUIVTASSRAGRUZLOUTLBRGRYVLOSFOLPVDMLOVXLUSAKZKOUFASSRUFNFFOKDRBGNSEKVAFXAUCTATEODFALMHMTSUFVXYVRZNUSYFNOTSULZTEQIVSKERGOUVSBNUIUFSKAXNSZFNDSVVCBRSAADMTRUMVUFNDVENAURSVOTBFLZTEQIVSUFTFMTSLNAEUCMGSUFGRUTBNAVBCMVNYLODGUFTFPVKEOULMNADAVQNDSVNFMLXVAUSLSEAXBRXVGALRGNCWKCXVNDKCFDENRGPSLURODAEQNUKZFNSOMVMSHNYREYASFDRFKDTWRUUFNGLODGMVTPDALHTSRODAVQVKDAFDENDVLMFNTVVDBUFDRBOGTSNGLODGUFDATAVSOTVLDALERZLUPRTOXAAVUFVXYVRZNUSYFNOUSZSLGNMVUTKDUCLZASLMWRAGRUYVYVOLSAVMUMCMRWEMMVDAWIDKTRKSBWRULOBILMVHMLUFSKDAVUDAVPDBDAVQETCTSENDAVFDQZQBYTSPUTGOVPGDTCTRAVGNDAEUVBAUFDRBCBPVAONVUTMRMVCYRKHOPTAVGACTGVAVRGZROHUYDEASTSASRSAOLMWRVXBRFUKDVWNUPCTSUFGRSVETLOWCASRSANAULMWRVXBRKQKDSUKDVWNUVICWNVRNVSGNDAEYDENGNAVXKFTUKDOURZNDTIRUYCTFNVUFTONAVXKFTUKDRGKAFOUTRZVTBGAOKDBNAVWITRHNOLOBRNNGBDOITEAVKNXKCTSENKIQKDEOTQXACVETGAMVXKVSENAUKDVWNUPVCZDBOSDABEGAKZFNAVYCDVUTLRGNDHWILFIGPVUKTAWBVSQCNAWITRHNNDRPKDANENCWKCTOASTULUSYFUCYOGNDAOYCDVUTBNGSGNNFOTBFKDYGUOTLLTUNTUKDTWNSZFDKDVUFSTZVVPDBQCNABVKGNVXAOIGRRGLOUTOGSLASKDVWNUXRVBVATOKDUFTRYKSPUFTFOGSLMVIXETDVWCUBFDYGFTAVUTHNGNUFTFGBROOATUOGSLDKVSRGOUVSBGKERXTFOTADZRBNVZLUFDVANEVSBNSWCWNVDAVQLUFDVARLCYHNSVOLHCVSRZVLNBASLMWRVXBRKQKDSOKDUFTRYKSPUFTFUKVKTRHNKCDAXSGNDANYEFNGNDGASPSATWVSOTAMGDUHFVRBEMGNDAAUNDKCMVMBASTOXAKZKOKDZRSCNVVWUFGNLTTVDLTRSRAOMCUFVXYVRZBNVNKDSOUTZBGRRXTFOTVLLZZFVBANVDMTRUNEVSBUCYEMYVYVNUAOQTUBTRTCSEASTQUFVSDKRHLFAGVSUIRGUOUSVBYKRBDMTRCIFDWCQCIHDAUBTRGBWTRNASKDPVGQMUTDFRNUAOGAOTVYOSSKXAFRHTFOTULUKSQCTNSVUSIGEMUTLRSWSVFRMUSQ".lower()
     eval_func = text_splitter.twonorm_frequency_distance_with_quadrams
 
-    if eval_func.__name__ in ["twonorm_frequency_distance", "twonorm_frequency_distance_with_quadrams"]:
-        thresh = -math.inf # Check what is a good result for the log approach?
-        the_bestest_score = thresh
-    else:
-        thresh = 0.01
-        the_bestest_score = thresh
+    the_bestest_score = -math.inf
+    thresh = the_bestest_score
     the_bestest_key = copy.deepcopy(block.grid)
-    it = 0
+    it = 0 # Iteration counter
     while True:
         block.init_from_list(the_bestest_key)
         if it % 3 == 0 and it != 0:
@@ -295,10 +277,5 @@ if __name__ == "__main__":
                 f.write(str(time.time()) + "\n" +
                         "New best score: " + str(the_bestest_score) + "\n" +
                         "Best key found: " + str(best_key) + "\n" +
-                        "Splitted text: " + text_splitter.infer_spaces(solver.decrypt_with_key(best_key), "en") + "\n\n")
+                        "Split text: " + text_splitter.infer_spaces(solver.decrypt_with_key(best_key), "en") + "\n\n")
         it += 1
-    """
-    uf => th
-    kd => he
-    da => in
-    """

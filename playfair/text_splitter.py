@@ -141,7 +141,7 @@ def twonorm_frequency_distance(string: str):
     distance /= len(bigrams)
     return distance, "en" # Currently so
 
-# # Quadrams
+# # Quadrams (old version with own file)
 #
 # # Top english bigrams
 # quadrams_to_check = dict()
