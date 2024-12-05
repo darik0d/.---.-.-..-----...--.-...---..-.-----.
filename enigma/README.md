@@ -14,6 +14,10 @@ troppo stretti che la facevano camminare come un gorilla
 ```
 Deze tekst komt uit `La solitudine dei numeri primi` door Paolo Giordano.
 
+Rotors: ``[1, 3, 4]``, ``['E', 'F', 'I']``
+
+Plug mapping: ``KBCXEUGNSWALMHOPQRITFVJDYZ``
+
 ## Oplossingsmethode
 Enigma wordt ontcijferd door het implementeren van de Advanced Turing Bombe.
 
