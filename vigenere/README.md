@@ -1,5 +1,8 @@
 # Cracking the Vigenere Cipher
 
+## Hoe uit te voeren
+Voer de pythonfile ``main.py`` uit. Verslag is hieronder te vinden.
+
 ## Oplossing
 
 Rauwe ontcijferde tekst:
