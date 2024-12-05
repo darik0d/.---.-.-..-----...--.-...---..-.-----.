@@ -66,6 +66,9 @@ We maken wel gebruik van het feit dat we de key lengte weten (kan via trial and 
 - ``VigenereSolver.py`` kraakt de vigenere zelf, door steeds Caesar ciphers uit te voeren, en steeds het meest frequente karakter gelijk te stellen aan 'E'
 - ``main.py`` hier is de functie ``find_highest_cp``, deze functie voert alle mogelijke enkel-kolomtransposities uit, en behoudt de key van de resulterende transpositie decryptie die de meeste common prefixes heeft. Deze file voert ook de hele decryptie uit.
 
+### Moeilijkheden
+Niet aanwezig, het werkte na de eerste poging.
+
 ### References
 - Course Material Code Theory from Professor S. Symens
 - Vigenere cracking tool (https://www.simonsingh.net/The_Black_Chamber/vigenere_cracking_tool.html) from Simon Singh 

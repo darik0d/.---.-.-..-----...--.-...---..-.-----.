@@ -1,7 +1,23 @@
 # Enigma
 
+## Hoe uit te voeren
+Voer de pythonfile ``main.py`` uit.
+
+## Oplossing
+
+```
+alice della rocca odiava la scuola di sci odiava la sveglia alle sette e mezzo del mattino anche nelle vacanze 
+di natale e suo padre che a colazione la fissava e sotto il tavolo faceva ballare la gamba nervosa mente come a dire 
+su s briga ti odiava la calza maglia di lana che la punge va sulle cosce lem off o le che non le lasciavano muovere 
+le dita il casco che le schiaccia vale guance e puntava con il ferro sulla mandibola e poi quegli scarponi sempre 
+troppo stretti che la facevano camminare come un gorilla
+```
+
+## Oplossingsmethode
+Enigma wordt ontcijferd door het implementeren van de Advanced Turing Bombe.
+
 ### PermutatieMatrix
-de file ``PermutatieMatrix.py`` bevat de implementatie van de permutatie matrix. Deze matrix volgt het algoritme van de 
+De file ``PermutatieMatrix.py`` bevat de implementatie van de permutatie matrix. Deze matrix volgt het algoritme van de 
 geavanceerde Turing Bombe. Stroom wordt gesimuleerd door op elke positie van de matrix een ``PermutationNode`` te plaatsen.
 Ieder node object heeft een lijst van connections (``propagations``). Deze lijst bevat alle andere nodes, waarmee de 
 gegeven node verbonden is (verbindingen worden gemaakt volgens het algoritme van de cursus). Voor het onder stroom zetten van een node,
@@ -11,4 +27,9 @@ doen en oneindige recursie. Er is een ``clear()`` method, om alle stroom te late
 Het is makkelijk te checken welke nodes onder stroom worden gezet, indien er 1 node van de gegeven rij onder stroom staat,
 zal de rotors en rotorposities juist zijn.
 
+### Moeilijkheden
+Het evenredig verdelen van Enigma, zodat iedereen een deel kon bijdragen aan het oplossen van deze cipher.
 
+### References
+- Course Material Code Theory from Professor S. Symens
+- Enigma tool from https://atlas.uantwerpen.be/~ssymens/enigma.php
