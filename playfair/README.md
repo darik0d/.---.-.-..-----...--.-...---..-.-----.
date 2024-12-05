@@ -212,7 +212,7 @@ Waarschijnlijk de belangrijkste parameter. In de loop van het project heb ik ver
 Voor mijn eindimplementatie heb ik het laatste gekozen (omdat dat het beste werkte). 
 Voor de quadgrams frequenties heb ik een lijst van hier gepakt: http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/
 en naar log probabilities omgezet. Ik heb het ook eerst uitgeprobeerd met zelfafgeleide frequentie lijst (met Laplacian smoothing, want sommige combinaties kwamen niet voor in de dataset), maar dat gaf geen goede resultaten
-(ik vermoed dat er waarschijnlijk een grotere corpus nodig was).
+(ik vermoed dat er waarschijnlijk een groter corpus nodig was).
 
 #### Oplossing
 
