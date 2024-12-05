@@ -1,5 +1,5 @@
 # ADFGVX
-_Alle code bestaat uit python bestanden, uit te voeren in de adfgvx map zonder argumenten_
+_Alle code bestaat uit 3 aparte python bestanden, uit te voeren in de adfgvx map zonder argumenten_
 
 Om deze code te ontcijferen heb ik in drie stappen gewerkt.
 
@@ -18,7 +18,7 @@ Bij het onderzoeken van de digramfrequenties heb ik rekening gehouden met het vo
 - Bij een juiste transpositie zou het ook logisch zijn dat er bepaalde digrammen niet voorkwamen (bv. het is onwaarschijnlijk dat in een literaire tekst, alle getallen zouden voorkomen).
 
 
-In enkele minuten vind ik met `frequency_analyzer` vier ordeningen waarbij de maximale frequentie mijn *threshold* overschrijdt. De threshold is experimenteel bepaald.
+In enkele minuten vind ik met `frequency_analyzer.py` vier ordeningen waarbij de maximale frequentie mijn *threshold* overschrijdt. De threshold is experimenteel bepaald.
 Van de vier ordeningen is er één die hoogstwaarschijnlijk de juiste was: 
 (4, 2, 5, 0, 7, 1, 6, 8, 3). Bij deze volgorde kwamen 12 digrams niet voor, terwijl bij de andere transposities alle digrams minstens één keer voorkwamen.
 Deze volgorde heb ik bij de substitutie verder gebruikt en bleek uiteindelijk de juiste te zijn. 
