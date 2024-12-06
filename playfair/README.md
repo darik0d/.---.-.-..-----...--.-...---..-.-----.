@@ -2,7 +2,7 @@
 
 > :warning: Disclaimer: de code in deze folder gebruikt the infamous **BIG BALL OF MUD** pattern. Wees gewaarschuwd.
 
-De oorsponkelijke foldersstructuur zag er als volgt uit:
+De oorsponkelijke mappenstructuur zag er als volgt uit:
 
 ```
 │   bigram_test.png
@@ -118,7 +118,7 @@ De oorsponkelijke foldersstructuur zag er als volgt uit:
 │           nl_nld_mixed_2012_100K-sentences.txt
 ```
 
-Laten we eerst beginnen met de root folder. Naast deze ``README.md`` file kan je de volgende belangrijke bestanden vinden:
+Laten we beginnen met de root folder. Naast deze ``README.md`` file kan je er de volgende belangrijke bestanden vinden:
 
 - ``bigram_test.png``: bigramverdeling van de ciphertext.
 - ``decrypted.txt``: output van de vorige runs van de Playfair solver
@@ -133,7 +133,7 @@ Om te bepalen met welke van deze talen ik verder moet werken, heb ik een frequen
 
 ### Frequentieanalyse
 
-Aangezien dat Playfair een bericht bigram per bigram encrypt, vond ik het logisch om een frequentietabel op te stellen voor elke van de gegeven talen en te vergelijken of het min om meer hetzelfde patroon volgt als de gegeven ciphertext.
+Aangezien dat Playfair een bericht bigram per bigram encrypteert, vond ik het logisch om een frequentietabel op te stellen voor elk van de gegeven talen en te vergelijken met de frequentie van de ciphertext om te bepalen of de taal min of meer hetzelfde patroon volgt als de gegeven ciphertext.
 Hiervoor heb ik een dataset van 100000 zinnen van elke taal gepakt van https://wortschatz.uni-leipzig.de/en/download. In ``corpus/original`` folder kan je die datasets vinden. 
 Daarna heb ik met ``corpus/corpus_preprocessing.py`` alle bestanden verwerkt zodat ze alleen lowercase letters bevatten (daarnaast heb ik j met i vervangen en en ook de letters met diakritische tekens met overeenstemmende letters van het Latijnse alfabet).
 Het resultaat kan je in de ``corpus/preprocessed`` folder vinden.
@@ -149,19 +149,19 @@ Hier is de grafiek hiervan (voor de andere talen kan je grafieken in de ``stats`
 
 ## Simulated annealing
 
-Simulated annealing is een optimalisatiealgoritme dat kan gebruikt worden om een globale extremum te vinden (in ons geval het globale maximum, maar daarover verder). 
-Om gevallen te voorkomen waarbij het model in een lokaal extremum blijft hangen (wat zou in het geval van een hill climbing kunnen gebeuren), wordt er een concept van *temperatuur* geïntroduceerd.
+Simulated annealing is een optimalisatiealgoritme dat kan gebruikt worden om een globaal extremum te vinden (in ons geval het globale maximum, maar daarover verder meer). 
+Om gevallen te voorkomen waarbij het model in een lokaal extremum blijft hangen (wat in het geval van hill climbing zou kunnen gebeuren), wordt er een concept van *temperatuur* geïntroduceerd.
 Hoe hoger de temperatuur, hoe groter de kans dat een key met een slechtere score geaccepteerd wordt.
-In de loop van de simulated annealing algoritme daalt de temperatuur geleidelijk, wat tot een *greedier* search zorgt. 
+In de loop van de simulated annealing algoritme daalt de temperatuur geleidelijk, wat tot een *greedier* search leidt. 
 
-Samengevat, hier is een overzicht van hoe het algoritme in algemeen werkt:
+Samengevat, hier is een overzicht van hoe het algoritme in het algemeen werkt:
 
 1. Begin met een start key *k* en temperatuur *t*.
 2. Bij elke stap wordt *t* afgekoeld volgens temperatuurrooster r.
-3. Bij elke stap bereken een neighbour van de huidige sleutel
-4. Bereken de score van de nieuwe sleutel
-   5. Als de score hoger is dan de huidige score, wordt de buursleutel de huidige sleutel. 
-   6. Als het niet het geval is, kan de nieuwe sleutel toch geaccepteerd worden als huidige sleutel met de kans e<sup>(huidige score - nieuwe score)/(temperatuur)</sup>
+3. Bij elke stap, bereken een neighbour van de huidige sleutel
+4. Bereken de score van de nieuwe sleutel:
+   5. Als de score hoger is dan de huidige score, wordt de neighbour sleutel de huidige sleutel. 
+   6. Zo niet, kan de nieuwe sleutel toch geaccepteerd worden als huidige sleutel met de kans e<sup>(huidige score - nieuwe score)/(temperatuur)</sup>
 7. Herhaal 2-6 tot *t* 0 wordt.
 8. Return de beste sleutel met de beste score.
 
@@ -177,16 +177,16 @@ Maar opnieuw, door de aard van het algoritme, werkt het in beide gevallen.
 
 #### Begintemperatuur
 
-Hangt sterk van de evaluatiefunctie en de afkoelingsstrategie af. Ik heb gekozen om die niet te hoog te zetten, omdat anders zou het aantal van totale stappen onnodig hoog liggen. In de huidige implementie is gelijk aan 50.
+Hangt sterk van de evaluatiefunctie en de afkoelingsstrategie af. Ik heb gekozen om die niet te hoog te zetten, omdat anders het aantal van totale stappen onnodig hoog zou liggen. In de huidige implementie is deze parameter gelijk aan 50.
 
 #### Afkoelingsstrategie
 
 Er bestaan verschillende afkoelingsstrategieën [(paper)](https://iopscience.iop.org/article/10.1088/0305-4470/31/41/011), maar de simpelste daarvan, namelijk de lineaire daling, geeft vaak ook de beste resultaten. 
-Dus in dit project heb ik gekozen om niet het wiel opnieuw te ontdekken en gewoon deze strategie gepakt. 
+Dus in dit project heb ik gekozen om niet het wiel opnieuw uit te vinden en gewoon deze strategie gepakt. 
 
 #### Aantal stappen
 
-Bepaalt hoeveel iteraties met dezelfde temperatuur wordt er uitgevoerd. 
+Bepaalt hoeveel iteraties met dezelfde temperatuur er worden uitgevoerd. 
 Wordt experimenteel bepaald. Voor de huidige implementatie heb ik dit getal aan 500 gelijk gesteld. 
 
 #### Aantal iteraties
@@ -209,10 +209,10 @@ Waarschijnlijk de belangrijkste parameter. In de loop van het project heb ik ver
 - ...
 - Som van de frequenties van de quadgrams van de ontcijferde tekst
 
-Voor mijn eindimplementatie heb ik het laatste gekozen (omdat het best werkte). 
+Voor mijn eindimplementatie heb ik het laatste gekozen (omdat dat het beste werkte). 
 Voor de quadgrams frequenties heb ik een lijst van hier gepakt: http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/
-en naar log probabilities omgezet. Ik heb het ook eerst uitgeprobeerd met zelfafgeleide frequentie lijst (met Laplacian smoothing, want sommige combinaties kwamen niet voor in de dataset), maar het gaf niet goede resultaten
-(ik vermoed dat er waarscrijnlijk een grotere corpus nodig was).
+en naar log probabilities omgezet. Ik heb het ook eerst uitgeprobeerd met zelfafgeleide frequentie lijst (met Laplacian smoothing, want sommige combinaties kwamen niet voor in de dataset), maar dat gaf geen goede resultaten
+(ik vermoed dat er waarschijnlijk een groter corpus nodig was).
 
 #### Oplossing
 

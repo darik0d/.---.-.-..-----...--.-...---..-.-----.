@@ -8,4 +8,4 @@ We hebben het werk verdeeld als volgt:
 - Playfair: Daria Matviichuk
 - Enigma: Tibo Verreycken, Jesse Daems, Daria Matviichuk
 
-In de afzonderlijke mappen staan nog README's die in meer detail gaan over onze oplossingen.
+In de afzonderlijke mappen staan nog README's die in meer detail gaan over onze oplossingen. Deze README's dienen als verslag over de code.

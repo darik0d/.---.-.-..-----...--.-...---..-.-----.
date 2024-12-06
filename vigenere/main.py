@@ -3,6 +3,10 @@ from CommonPrefixCounter import CommonPrefixCounter
 from TranspositionCipher import TranspositionCipher
 from VigenereSolver import VigenereSolver
 
+"""
+original ciphertext
+"""
+
 string = "YZDCHLBZIANYLLXRZMMPMOVZCHWDCAKVJHAPUUNVHTGPNAEIILWXNUNLZMLGCLIIOLDZUAVNZTMPMLIIOGGRUQZPDOWLGLDZCALADVVXCXWY" \
          "UJRSIADKMKUMNEGLCSNICXVYTPERQZGHILVJASDRHLEIMKGPEUVVZXWSGBWEJZSSFYNIYSVTNUVLOGMLHWKIYHYTYLUOCTSCYAVIVWKHMKEIYA" \
          "DPYYERIHWPHSFEPXWTEPKEEUSZLFKAPRKZXVZNYZRDWFWUAREPGNVGVUXOCVLFHZEMIFXIKSVOGAPVHVXZHGPLVEMNWWEDAERMXLEFDCSZKNXHA" \
@@ -42,7 +46,11 @@ def find_highest_cp(cipher_string):
     key length check range
     """
     min_key_length = 2
-    max_key_length = 10
+
+    """
+    This is normally set to 10, but for the sake of easy reproducibility, it is set for 7
+    """
+    max_key_length = 7
 
     """
     for each key length, do the following
@@ -97,9 +105,8 @@ if __name__ == "__main__":
     Solve Transposition Cipher
     UNCOMMENT the line below, to solve the single column transposition (takes SOME TIME TO EXECUTE)
     """
-    #best_key = find_highest_cp(string)
-
-    best_key = "ABECGFD"
+    best_key = find_highest_cp(string)
+    print("single column transposition key", best_key)
 
     out = TranspositionCipher.decrypt(best_key, string)
 
@@ -108,4 +115,4 @@ if __name__ == "__main__":
     """
     vs = VigenereSolver(out)
     plaintext, key = vs.crack()
-    print(key, plaintext)
+    print("vigenere kay and text", key, plaintext)

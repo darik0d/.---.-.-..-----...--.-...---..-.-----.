@@ -63,7 +63,7 @@ class PermutatieMatrix:
     _char_range = [65, 91]
 
     """
-    set default Engima settings
+    set default Enigma settings
     """
     _rotors = ["AJDKSIRUXBLHWTMCQGZNPYFVOE",
                "EKMFLGDQVZNTOWYHXUSPAIBRCJ",

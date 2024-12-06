@@ -1,4 +1,5 @@
 # ADFGVX
+_Alle code bestaat uit 3 aparte python bestanden, uit te voeren in de adfgvx map zonder argumenten_
 
 Om deze code te ontcijferen heb ik in drie stappen gewerkt.
 
@@ -17,7 +18,7 @@ Bij het onderzoeken van de digramfrequenties heb ik rekening gehouden met het vo
 - Bij een juiste transpositie zou het ook logisch zijn dat er bepaalde digrammen niet voorkwamen (bv. het is onwaarschijnlijk dat in een literaire tekst, alle getallen zouden voorkomen).
 
 
-In enkele minuten vind ik met `frequency_analyzer` vier ordeningen waarbij de maximale frequentie mijn *threshold* overschrijdt. De threshold is experimenteel bepaald.
+In enkele minuten vind ik met `frequency_analyzer.py` vier ordeningen waarbij de maximale frequentie mijn *threshold* overschrijdt. De threshold is experimenteel bepaald.
 Van de vier ordeningen is er één die hoogstwaarschijnlijk de juiste was: 
 (4, 2, 5, 0, 7, 1, 6, 8, 3). Bij deze volgorde kwamen 12 digrams niet voor, terwijl bij de andere transposities alle digrams minstens één keer voorkwamen.
 Deze volgorde heb ik bij de substitutie verder gebruikt en bleek uiteindelijk de juiste te zijn. 
@@ -32,9 +33,10 @@ Dit gaf geen goede resultaten.
 
 Ook heb ik geprobeerd te vertrekken vanuit een frequentietabel en van daar de n (n=2, n=3) meest waarschijnlijke mappings van digram naar letter uit te proberen. Ook hierbij geen succes en een zeer lange runtime om iets betekenisvols te kunnen uitproberen.
 
-Ten slotte besefte ik dat ik een meer gestructureerde aanpak nodig had. Ik ben gegaan voor het Hill Climbing algoritme. Voor de fitness-functie leek de woordenlijst-aanpak mij niet geschikt aangezien deze geen duidelijk verschil zou geven in score bij één aanpassing aan de substitutie, wat net belangrijk is voor Hill Climbing.
+Ten slotte besefte ik dat ik een meer gestructureerde aanpak nodig had. Ik ben gegaan voor het Hill Climbing algoritme. Dit algoritme begint van een manueel gekozen startmapping van digrams naar letters (ik heb gekozen voor de mapping van een tekst die exact de frequentietabel volgt) en gaat dan telkens de mapping van twee digrams omwisselen. Aan de hand van een fitness-score berekent het algoritme of deze mapping beter of slechter is dan de huidige mapping. Als de nieuwe mapping beter is, wordt deze behouden en wordt het proces herhaald. Ik heb de Stochastic variant op dit algoritme gebruikt: deze kiest de twee digrams om te wisselen telkens willekeurig en stopt wanneer alle opties slechter zijn dan de huidige mapping. Op dat moment is een (lokaal) maximum bereikt.
+Voor de fitness-functie leek de woordenlijst-aanpak mij niet geschikt aangezien deze geen duidelijk verschil zou geven in score bij één aanpassing aan de substitutie, wat net belangrijk is voor Hill Climbing.
 
-Daarom heb ik gekozen voor een variant op de fitness functie hier beschreven: http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/. 
+Daarom heb ik gekozen voor een variant op de fitness functie hier beschreven: http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/. Deze gebruikt een vooraf berekende n-gramfrequentietabel en verhoogt voor elke n-gram in de gegeven plaintext de fitness score met de frequentie uit de tabel. Quadgrams bleken het beste te werken.
 
 Met deze aanpak kon ik de plaintext vinden.
 
