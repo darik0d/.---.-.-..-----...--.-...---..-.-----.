@@ -100,46 +100,46 @@ def index_of_coincidence(string: str):
     ic /= n * (n - 1)
     return ic, "en" # Currently so
 
-# Top english bigrams
-bigrams_to_check = dict()
-text = open("corpus/preprocessed/en/eng_news_2005_100K-sentences.txt").read()
-bigrams = re.findall(r".{1,2}", text)
-bigrams.extend(re.findall(r".{1,2}", text[1:]))
-for bigram in bigrams:
-    if bigram in bigrams_to_check:
-        bigrams_to_check[bigram] += 1
-    else:
-        bigrams_to_check[bigram] = 1
-for bigram in bigrams_to_check:
-    bigrams_to_check[bigram] += 1
-    bigrams_to_check[bigram] /= (len(bigrams) + 1) # Smoothing!
-    bigrams_to_check[bigram] = math.log10(bigrams_to_check[bigram])
-# Sort
-bigrams_to_check = dict(sorted(bigrams_to_check.items(), key=lambda item: item[1], reverse=True))
-
-def twonorm_frequency_distance(string: str):
-    """
-    Calculate the two norm distance between the bigram frequencies of the string and the bigrams_to_check.
-
-    :param string: The string to calculate the bigram frequencies.
-    :param bigrams_to_check: The bigram frequencies to compare with.
-    """
-    distance = 0
-    bigrams = re.findall(r".{1,2}", string)
-    bigrams.extend(re.findall(r".{1,2}", string[1:]))
-    bigram_frequency = {}
-    for bigram in bigrams:
-        if bigram in bigram_frequency:
-            bigram_frequency[bigram] += 1
-        else:
-            bigram_frequency[bigram] = 1
-    bigram_frequency = dict(sorted(bigram_frequency.items(), key=lambda item: item[1], reverse=True))
-    for bigram in bigram_frequency:
-        if bigram in bigrams_to_check: # Normally should be ok
-            # distance += (bigrams_to_check[bigram] - bigram_frequency[bigram]) ** 2
-            distance += bigrams_to_check[bigram]*bigram_frequency[bigram]
-    distance /= len(bigrams)
-    return distance, "en" # Currently so
+# # Top english bigrams # Old approach for the heuristic
+# bigrams_to_check = dict()
+# text = open("corpus/preprocessed/en/eng_news_2005_100K-sentences.txt").read()
+# bigrams = re.findall(r".{1,2}", text)
+# bigrams.extend(re.findall(r".{1,2}", text[1:]))
+# for bigram in bigrams:
+#     if bigram in bigrams_to_check:
+#         bigrams_to_check[bigram] += 1
+#     else:
+#         bigrams_to_check[bigram] = 1
+# for bigram in bigrams_to_check:
+#     bigrams_to_check[bigram] += 1
+#     bigrams_to_check[bigram] /= (len(bigrams) + 1) # Smoothing!
+#     bigrams_to_check[bigram] = math.log10(bigrams_to_check[bigram])
+# # Sort
+# bigrams_to_check = dict(sorted(bigrams_to_check.items(), key=lambda item: item[1], reverse=True))
+#
+# def twonorm_frequency_distance(string: str):
+#     """
+#     Calculate the two norm distance between the bigram frequencies of the string and the bigrams_to_check.
+#
+#     :param string: The string to calculate the bigram frequencies.
+#     :param bigrams_to_check: The bigram frequencies to compare with.
+#     """
+#     distance = 0
+#     bigrams = re.findall(r".{1,2}", string)
+#     bigrams.extend(re.findall(r".{1,2}", string[1:]))
+#     bigram_frequency = {}
+#     for bigram in bigrams:
+#         if bigram in bigram_frequency:
+#             bigram_frequency[bigram] += 1
+#         else:
+#             bigram_frequency[bigram] = 1
+#     bigram_frequency = dict(sorted(bigram_frequency.items(), key=lambda item: item[1], reverse=True))
+#     for bigram in bigram_frequency:
+#         if bigram in bigrams_to_check: # Normally should be ok
+#             # distance += (bigrams_to_check[bigram] - bigram_frequency[bigram]) ** 2
+#             distance += bigrams_to_check[bigram]*bigram_frequency[bigram]
+#     distance /= len(bigrams)
+#     return distance, "en" # Currently so
 
 # # Quadrams (old version with own file)
 #
